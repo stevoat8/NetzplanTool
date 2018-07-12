@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FluentCommandLineParser, Version=1.4.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FluentCommandLineParser.1.4.3\lib\net35\FluentCommandLineParser.dll</HintPath>
+    </Reference>
     <Reference Include="GraphVizWrapper, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GraphViz.NET.1.0.0\lib\net40\GraphVizWrapper.dll</HintPath>
     </Reference>
@@ -56,9 +59,9 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Process\Process.csproj">
-      <Project>{c2e35af6-b4ea-4730-b4d9-2624ac457a42}</Project>
-      <Name>Process</Name>
+    <ProjectReference Include="..\Netzplan\Netzplan.csproj">
+      <Project>{0a279458-9623-4128-945a-0ea0f8ac496e}</Project>
+      <Name>Netzplan</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

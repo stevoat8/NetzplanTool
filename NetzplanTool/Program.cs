@@ -1,11 +1,6 @@
-﻿using NetzplanTool.Model;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Process.Model;
+﻿using System;
+using Fclp;
+using Netzplan;
 
 namespace NetzplanTool
 {
@@ -13,21 +8,35 @@ namespace NetzplanTool
     {
         static void Main(string[] args)
         {
-            string csvPath = args[1];
-            string outputPath = args[2];
+            string csvPath = "";
+            string outputPath = "";
 
-            string processTitle = Path.GetFileNameWithoutExtension(csvPath);
+            var p = new FluentCommandLineParser();
 
-            ReadCsv(csvPath, processTitle);
+            p.Setup<string>('i', "input")
+             .Callback(value => csvPath = value)
+             .Required();
+
+            p.Setup<string>('o', "output")
+             .Callback(value => outputPath = value)
+             .Required();
+
+            p.Setup<string>('h', "help")
+             .Callback(ShowHelp);
+
+            p.Parse(args);
+
+            Graph.CreateGarph(csvPath, outputPath);
         }
 
-        private static void ReadCsv(string csvPath, string processTitle)
+        private static void ShowHelp(string obj)
         {
-            string[] lines = File.ReadAllLines(csvPath);
-            for (int i = 1; i < lines.Length; i++)
-            {
-                string[] knotenStr = lines[i].Split(',');
-            }
+            string line = "";
+            line += "=================================" + Environment.NewLine;
+            line += "===           HILFE           ===" + Environment.NewLine;
+            line += "=================================" + Environment.NewLine;
+
+            Console.WriteLine(line);
         }
     }
 }

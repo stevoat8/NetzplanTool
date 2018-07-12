@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C2E35AF6-B4EA-4730-B4D9-2624AC457A42}</ProjectGuid>
+    <ProjectGuid>{0A279458-9623-4128-945A-0EA0F8AC496E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Process</RootNamespace>
-    <AssemblyName>Process</AssemblyName>
+    <RootNamespace>Netzplan</RootNamespace>
+    <AssemblyName>Netzplan</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -40,8 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\Knode.cs" />
-    <Compile Include="Model\Process.cs" />
+    <Compile Include="Graph.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
