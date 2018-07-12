@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetzplanTool", "NetzplanTool\NetzplanTool.csproj", "{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Process", "Process\Process.csproj", "{C2E35AF6-B4EA-4730-B4D9-2624AC457A42}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2E35AF6-B4EA-4730-B4D9-2624AC457A42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2E35AF6-B4EA-4730-B4D9-2624AC457A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2E35AF6-B4EA-4730-B4D9-2624AC457A42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2E35AF6-B4EA-4730-B4D9-2624AC457A42}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {395CB874-FE13-4E0F-B079-C5F9B621CC87}
+	EndGlobalSection
+EndGlobal
