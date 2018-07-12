@@ -10,10 +10,15 @@ namespace Netzplan
     {
         public string Title { get; set; }
         public Node IntitalNode { get; set; }
+        public Node FinalNode { get; set; }
+        public Dictionary<string, Node> Nodes { get; }
 
-        public Process(string name)
+        public Process(string title, Dictionary<string, Node> nodes)
         {
-            Title = name;
+            Title = title;
+            Nodes = nodes;
+            IntitalNode = nodes.Values.Where(n => n.Predecessors is null).First();
+            FinalNode = nodes.Values.Where(n => n.Ancestors is null).First();
         }
     }
 }

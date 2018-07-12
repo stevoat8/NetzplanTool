@@ -26,7 +26,19 @@ namespace NetzplanTool
 
             p.Parse(args);
 
-            Graph.CreateGarph(csvPath, outputPath);
+
+            try
+            {
+                Graph.CreateGraph(csvPath, outputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Error.WriteLine(ex.Message);
+                Console.ResetColor();
+                Console.WriteLine("(Beliebige Taste zum Beenden)");
+                Console.ReadKey();
+            }
         }
 
         private static void ShowHelp(string obj)
