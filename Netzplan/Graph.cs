@@ -9,104 +9,35 @@ namespace Netzplan
 {
     public class Graph
     {
-        public static void CreateGraph(string csvPath, string outputPath)
+        internal Node IntitalNode { get; set; }
+        internal Node FinalNode { get; set; }
+        internal Dictionary<string, Node> Nodes { get; }
+
+        public Graph(string[] lines)
         {
-            string processTitle = Path.GetFileNameWithoutExtension(csvPath);
+            Dictionary<string, Node> nodes = CreateNodes(lines);
+            ConnectNodes(nodes);
+            Nodes = nodes;
 
-            string[] lines = ReadCheckCsv(csvPath);
+            IntitalNode = nodes.Values.Where(n => Node.IsInitialNode(n)).First();
+            FinalNode = nodes.Values.Where(n => Node.IsFinalNode(n)).First();
 
-            Dictionary<string, Node> nodes;
-
-            try
-            {
-                nodes = CreateNodes(lines);
-                ConnectNodes(nodes);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(
-                    "Bei dem Parsen der CSV-Datei trat ein Fehler auf. " +
-                    "Originale Fehlermeldung: " + ex.Message);
-            }
-
-            Process process = new Process(processTitle, nodes);
-
-            ScheduleForward(process.IntitalNode);
-            ScheduleBackwards(process.FinalNode);
-
-
-            //string graphDot = CreateGraphDot(process);
-
-            //ExportGraph(outputPath, graphDot);
+            ScheduleForward(IntitalNode);
+            ScheduleBackwards(FinalNode);
+            DetermineBuffers(IntitalNode);
         }
-
-        private static void ScheduleForward(Node node)
-        {
-            if (node.Ancestors != null)
-            {
-                node.FAZ = (node.Predecessors is null)
-                    ? 0
-                    : node.Predecessors.Select(n => n.FEZ).Max();
-                node.FEZ = node.FAZ + node.Duration;
-                foreach (Node ancestor in node.Ancestors)
-                {
-                    ScheduleForward(ancestor);
-                }
-            }
-        }
-
-        private static void ScheduleBackwards(Node node)
-        {
-            int a = 3;
-        }
-
-        private static string[] ReadCheckCsv(string csvPath)
-        {
-            string[] lines = new string[0];
-            try
-            {
-                lines = File.ReadAllLines(csvPath, Encoding.UTF7);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
-            //TODO: Check ob alle Zeilen das richtige Format haben
-            for (int i = 1; i < lines.Length; i++)
-            {
-                string[] props = lines[i].Split(';');
-            }
-
-            return lines;
-        }
-
-        private static void ConnectNodes(Dictionary<string, Node> nodes)
-        {
-            foreach (string key in nodes.Keys)
-            {
-                if (nodes[key].Predecessors != null)
-                {
-                    foreach (Node predecessor in nodes[key].Predecessors)
-                    {
-                        nodes[key].Ancestors.Add(predecessor);
-                    }
-                }
-            }
-        }
-
+        
         private static Dictionary<string, Node> CreateNodes(string[] lines)
         {
+            //TODO: CreateNodes und ConnectNodes zusammenfügen
             Dictionary<string, Node> nodes = new Dictionary<string, Node>();
             for (int i = 1; i < lines.Length; i++)
             {
                 string[] props = lines[i].Split(';');
 
-                List<Node> predecessors = null;
+                List<Node> predecessors = new List<Node>();
                 if (props[3] != "-")
                 {
-                    predecessors = new List<Node>();
-
                     string[] predecessorStrings = props[3].Split(',');
 
                     foreach (string pre in predecessorStrings)
@@ -121,15 +52,77 @@ namespace Netzplan
 
                 nodes.Add(
                     props[0],
-                    new Node()
-                    {
-                        ID = props[0],
-                        Description = props[1],
-                        Duration = Int32.Parse(props[2]),
-                        Predecessors = predecessors
-                    });
+                    new Node(props[0], props[1], Int32.Parse(props[2]), predecessors));
             }
             return nodes;
+        }
+
+        private static void ConnectNodes(Dictionary<string, Node> nodes)
+        {
+            foreach (string key in nodes.Keys)
+            {
+                foreach (Node predecessor in nodes[key].Predecessors)
+                {
+                    nodes[predecessor.ID].Ancestors.Add(nodes[key]);
+                }
+            }
+        }
+
+        private static void ScheduleForward(Node node)
+        {
+            node.FAZ = (Node.IsInitialNode(node))
+                ? 0
+                : node.Predecessors.Select(n => n.FAZ + n.Duration).Max();
+            node.FEZ = node.FAZ + node.Duration;
+
+            foreach (Node ancestor in node.Ancestors)
+            {
+                ScheduleForward(ancestor);
+            }
+        }
+
+        private static void ScheduleBackwards(Node node)
+        {
+            node.SEZ = (Node.IsFinalNode(node))
+                ? node.FEZ
+                : node.Ancestors.Select(n => n.FAZ).Min();
+            node.SAZ = node.SEZ - node.Duration;
+            foreach (Node predecessor in node.Predecessors)
+            {
+                ScheduleBackwards(predecessor);
+            }
+        }
+
+        private static void DetermineBuffers(Node node)
+        {
+            node.GP = node.SEZ - node.FEZ;
+            node.FP = (Node.IsFinalNode(node))
+                ? 0
+                : node.Ancestors.Select(n => n.FAZ).Min() - node.FEZ;
+
+            foreach (Node ancestor in node.Ancestors)
+            {
+                DetermineBuffers(ancestor);
+            }
+        }
+
+        private string GetCriticalPath()
+        {
+            List<Node> critPath = new List<Node>();
+
+            Node node = IntitalNode;
+
+            while (Node.IsFinalNode(node) == false)
+            {
+                critPath.Add(node);
+                node = node.Ancestors?.Where(n => n.SAZ == node.SEZ).First();
+            }
+            return String.Join(",", critPath.Select(n => n.ID));
+        }
+
+        public string GetDot()
+        {
+            throw new NotImplementedException();
         }
     }
 }
