@@ -1,8 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Fclp;
 using Netzplan;
+using GraphVizWrapper;
+using GraphVizWrapper.Commands;
+using GraphVizWrapper.Queries;
 
 namespace NetzplanTool
 {
@@ -38,26 +42,40 @@ namespace NetzplanTool
 
             p.Parse(args);
 
+            var getStartProcessQuery = new GetStartProcessQuery();
+            var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
+            var registerLayoutPluginCommand = new RegisterLayoutPluginCommand(
+                getProcessStartInfoQuery, getStartProcessQuery);
+
+            GraphGeneration wrapper = new GraphGeneration(
+                getStartProcessQuery,
+                getProcessStartInfoQuery,
+                registerLayoutPluginCommand);
 
             try
             {
-                string[] lines = ReadCsv(csvPath);
-                Graph graph = new Graph(lines);
-                string graphDot = graph.GetDot();
+                string[] lines = File.ReadAllLines(csvPath, Encoding.UTF7)
+                    .Skip(1).ToArray();
+                string graphTitle = Path.GetFileNameWithoutExtension(csvPath);
+                Graph graph = new Graph(graphTitle, lines);
 
-                //ExportGraph(outputPath, graphDot);
+                string dot = graph.GetDot();
+                //TODO: FileFormat anpassen
+                byte[] graphBytes = wrapper.GenerateGraph(dot, Enums.GraphReturnType.Png);
+                string outputFileName = Path.Combine(outputPath, graph.Title) + ".png";
+                //TODO: Prüfen, ob Ordner existiert
+                File.WriteAllBytes(outputFileName, graphBytes);
+
+                Console.WriteLine("Graph erfolgreich generiert");
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.Error.WriteLine(ex.Message);
                 Console.ResetColor();
-            }
-            finally
-            {
                 Console.WriteLine("(Beliebige Taste zum Beenden)");
                 Console.ReadKey();
-            }    
+            }
         }
 
         private static void ShowHelp(string obj)
@@ -68,28 +86,6 @@ namespace NetzplanTool
             line += "=================================" + Environment.NewLine;
 
             Console.WriteLine(line);
-        }
-
-
-        private static string[] ReadCsv(string path)
-        {
-            string[] lines = new string[0];
-            try
-            {
-                lines = File.ReadAllLines(path, Encoding.UTF7);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-
-            //TODO: Check ob alle Zeilen das richtige Format haben
-            for (int i = 1; i < lines.Length; i++)
-            {
-                string[] props = lines[i].Split(';');
-            }
-
-            return lines;
         }
     }
 }

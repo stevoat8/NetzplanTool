@@ -9,24 +9,26 @@ namespace Netzplan
 {
     public class Graph
     {
-        internal Node IntitalNode { get; set; }
+        public string Title { get; set; }
+        internal Node IntitialNode { get; set; }
         internal Node FinalNode { get; set; }
         internal Dictionary<string, Node> Nodes { get; }
 
-        public Graph(string[] lines)
+        public Graph(string title, string[] lines)
         {
+            Title = title;
             Dictionary<string, Node> nodes = CreateNodes(lines);
             ConnectNodes(nodes);
             Nodes = nodes;
 
-            IntitalNode = nodes.Values.Where(n => Node.IsInitialNode(n)).First();
+            IntitialNode = nodes.Values.Where(n => Node.IsInitialNode(n)).First();
             FinalNode = nodes.Values.Where(n => Node.IsFinalNode(n)).First();
 
-            ScheduleForward(IntitalNode);
+            ScheduleForward(IntitialNode);
             ScheduleBackwards(FinalNode);
-            DetermineBuffers(IntitalNode);
+            DetermineBuffers(IntitialNode);
         }
-        
+
         private static Dictionary<string, Node> CreateNodes(string[] lines)
         {
             //TODO: CreateNodes und ConnectNodes zusammenfügen
@@ -110,7 +112,7 @@ namespace Netzplan
         {
             List<Node> critPath = new List<Node>();
 
-            Node node = IntitalNode;
+            Node node = IntitialNode;
 
             while (Node.IsFinalNode(node) == false)
             {
@@ -122,7 +124,40 @@ namespace Netzplan
 
         public string GetDot()
         {
-            throw new NotImplementedException();
+            string graph = BuildString();
+            //graph = "rankdir = LR;a-- b;b-- c;b-- d;d-- a;";
+            StringBuilder dot = new StringBuilder();
+            dot.Append($"digraph {Title}" + "{");
+            //TODO: Create dot
+            dot.AppendLine(graph);
+            dot.AppendLine("}");
+            return dot.ToString();
+        }
+
+        private string BuildString()
+        {
+            StringBuilder builder = new StringBuilder("node[shape=record]");
+            foreach (Node n in Nodes.Values)
+            {
+                string structure = $"{n.ID} [label:\"" +
+                    $"<f0>FAZ\\ =\\ {n.FAZ}|<f1>FEZ\\ =\\ {n.FEZ}" +
+                    $"<f2>{n.ID} |<f3>{n.Description}" +
+                    $"<f4>{n.Duration}|<f5>GP\\ =\\ {n.GP}|<f6>FP\\ =\\ {n.FP}" +
+                    $"<f7>FAZ\\ =\\ {n.SAZ}|<f8>FEZ\\ =\\ {n.SEZ}" +
+                    $"\"]";
+                builder.AppendLine(structure);
+            }
+
+            foreach (Node node in Nodes.Values)
+            {
+                foreach (Node anc in node.Ancestors)
+                {
+                    builder.AppendLine($"{node.ID} -> {anc.ID}");
+                }
+            }
+
+
+            return builder.ToString();
         }
     }
 }
