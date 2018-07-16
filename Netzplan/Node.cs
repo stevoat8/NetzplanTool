@@ -44,6 +44,11 @@ namespace Netzplan
         /// </summary>
         internal int FP { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        internal bool IsCritical { get; set; }
+
         internal Node(string id, string description, int duration, IList<Node> predecessors)
         {
             ID = id;

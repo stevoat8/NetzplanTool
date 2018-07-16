@@ -124,40 +124,35 @@ namespace Netzplan
 
         public string GetDot()
         {
-            string graph = BuildString();
-            //graph = "rankdir = LR;a-- b;b-- c;b-- d;d-- a;";
-            StringBuilder dot = new StringBuilder();
-            dot.Append($"digraph {Title}" + "{");
-            //TODO: Create dot
-            dot.AppendLine(graph);
-            dot.AppendLine("}");
-            return dot.ToString();
-        }
+            StringBuilder dotBuilder = new StringBuilder();
+            dotBuilder.AppendLine($"digraph {Title}" + "{");
+            dotBuilder.AppendLine("node[shape=record]");
+            dotBuilder.AppendLine("rankdir = LR");
 
-        private string BuildString()
-        {
-            StringBuilder builder = new StringBuilder("node[shape=record]");
             foreach (Node n in Nodes.Values)
             {
-                string structure = $"{n.ID} [label:\"" +
-                    $"<f0>FAZ\\ =\\ {n.FAZ}|<f1>FEZ\\ =\\ {n.FEZ}" +
-                    $"<f2>{n.ID} |<f3>{n.Description}" +
-                    $"<f4>{n.Duration}|<f5>GP\\ =\\ {n.GP}|<f6>FP\\ =\\ {n.FP}" +
-                    $"<f7>FAZ\\ =\\ {n.SAZ}|<f8>FEZ\\ =\\ {n.SEZ}" +
+                string structure =
+                    $"{n.ID} [label:\"" +
+                    $"{{FAZ={n.FAZ}|FEZ={n.FEZ}}}|" +
+                    $"{{{n.ID}|{n.Description}}}|" +
+                    $"{{{n.Duration}|GP={n.GP}|FP={n.FP}}}|" +
+                    $"{{FAZ={n.SAZ}|FEZ={n.SEZ}}}" +
                     $"\"]";
-                builder.AppendLine(structure);
+                dotBuilder.AppendLine(structure);
             }
 
             foreach (Node node in Nodes.Values)
             {
                 foreach (Node anc in node.Ancestors)
                 {
-                    builder.AppendLine($"{node.ID} -> {anc.ID}");
+                    //TODO: Check if crit path -> then red
+                    string edge = $"{node.ID} -> {anc.ID}";
+                    edge += (node.IsCritical) ? " [color=\"red\"]" : "";
+                    dotBuilder.AppendLine(edge);
                 }
             }
-
-
-            return builder.ToString();
+            dotBuilder.AppendLine("}");
+            return dotBuilder.ToString();
         }
     }
 }

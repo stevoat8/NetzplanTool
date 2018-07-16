@@ -7,6 +7,7 @@ using Netzplan;
 using GraphVizWrapper;
 using GraphVizWrapper.Commands;
 using GraphVizWrapper.Queries;
+using System.Diagnostics;
 
 namespace NetzplanTool
 {
@@ -60,13 +61,17 @@ namespace NetzplanTool
                 Graph graph = new Graph(graphTitle, lines);
 
                 string dot = graph.GetDot();
+                //dot = "graph graphname {rankdir = LR; a-- b; b-- c; b-- d; d-- a;}";
                 //TODO: FileFormat anpassen
                 byte[] graphBytes = wrapper.GenerateGraph(dot, Enums.GraphReturnType.Png);
                 string outputFileName = Path.Combine(outputPath, graph.Title) + ".png";
                 //TODO: Prüfen, ob Ordner existiert
                 File.WriteAllBytes(outputFileName, graphBytes);
 
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("Graph erfolgreich generiert");
+                Console.ResetColor();
+                Process.Start(outputFileName);
             }
             catch (Exception ex)
             {
