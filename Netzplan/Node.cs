@@ -6,50 +6,60 @@ using System.Threading.Tasks;
 
 namespace Netzplan
 {
-    internal class Node
+    public class Node
     {
-        internal string ID { get; set; }
-        internal string Description { get; set; }
-        internal int Duration { get; set; }
-        internal IList<Node> Predecessors { get; set; }
-        internal IList<Node> Ancestors { get; set; }
+        public string ID { get; set; }
+        public string Description { get; set; }
+        public int Duration { get; set; }
+        public IList<Node> Predecessors { get; set; }
+        public IList<Node> Ancestors { get; set; }
 
         /// <summary>
         /// Frühester Anfangzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int FAZ { get; set; }
+        public int FAZ { get; set; }
 
         /// <summary>
         /// Frühester Endzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int FEZ { get; set; }
+        public int FEZ { get; set; }
 
         /// <summary>
         /// Spätester Anfangzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int SAZ { get; set; }
+        public int SAZ { get; set; }
 
         /// <summary>
         /// Spätester Endzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int SEZ { get; set; }
+        public int SEZ { get; set; }
 
         /// <summary>
         /// Gesamtpuffer des Teilprozesses.
         /// </summary>
-        internal int GP { get; set; }
+        public int GP { get; set; }
 
         /// <summary>
         /// Freier Puffer des Teilprozesses.
         /// </summary>
-        internal int FP { get; set; }
+        public int FP { get; set; }
 
         /// <summary>
-        /// 
+        /// Der Knoten is Teil des kritishen Pfads. (GesamtPuffer = 0)
         /// </summary>
-        internal bool IsCritical { get; set; }
+        public bool IsCritical { get { return GP == 0; } }
 
-        internal Node(string id, string description, int duration, IList<Node> predecessors)
+        /// <summary>
+        /// Gibt an, ob der Knoten der Ursprungsknoten eines Graphen ist.
+        /// </summary>
+        public bool IsInitialNode { get { return Predecessors.Count == 0; } }
+
+        /// <summary>
+        /// Gibt an, ob der Knoten der Endknoten eines Graphen ist.
+        /// </summary>
+        public bool IsFinalNode { get { return Ancestors.Count == 0; } }
+
+        public Node(string id, string description, int duration, IList<Node> predecessors)
         {
             ID = id;
             Description = description;
@@ -68,28 +78,5 @@ namespace Netzplan
 
             return $"{ID} | {Description} | {Duration} | {predecessors} | {ancestors}";
         }
-
-        internal static bool IsInitialNode(Node node)
-        {
-            return node.Predecessors.Count == 0;
-        }
-
-        internal static bool IsFinalNode(Node node)
-        {
-            return node.Ancestors.Count == 0;
-        }
     }
-
-    //internal static class NodeExtension
-    //{
-    //    internal static bool IsInitialNode(this Node node)
-    //    {
-    //        return node.Ancestors.Count == 0;
-    //    }
-
-    //    internal static bool IsFinalNode(this Node node)
-    //    {
-    //        return node.Predecessors.Count == 0;
-    //    }
-    //}
 }
