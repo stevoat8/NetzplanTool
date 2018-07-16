@@ -71,6 +71,7 @@ namespace NetzplanTool
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("Graph erfolgreich generiert");
                 Console.ResetColor();
+
                 Process.Start(outputFileName);
             }
             catch (Exception ex)

@@ -17,14 +17,24 @@ namespace Netzplan
         public Graph(string title, string[] lines)
         {
             Title = title;
+
             Dictionary<string, Node> nodes = CreateNodes(lines);
             ConnectNodes(nodes);
 
             IntitialNode = nodes.Values.Where(n => n.IsInitialNode).First();
             FinalNode = nodes.Values.Where(n => n.IsFinalNode).First();
 
-            ScheduleForward(IntitialNode);
-            ScheduleBackwards(FinalNode);
+            List<string> keys = nodes.Keys.ToList();
+            foreach (string key in keys)
+            {
+                ScheduleForward(nodes[key]);
+            }
+
+            keys.Reverse();
+            foreach (string key in keys)
+            {
+                ScheduleBackwards(nodes[key]);
+            }
 
             Nodes = nodes;
         }
@@ -76,25 +86,15 @@ namespace Netzplan
                 ? 0
                 : node.Predecessors.Select(n => n.FAZ + n.Duration).Max();
             node.FEZ = node.FAZ + node.Duration;
-
-            foreach (Node ancestor in node.Ancestors)
-            {
-                ScheduleForward(ancestor);
-            }
         }
 
         private static void ScheduleBackwards(Node node)
         {
-            node.SAZ = node.SEZ - node.Duration;
-
-            foreach (Node predecessor in node.Predecessors)
-            {
-                ScheduleBackwards(predecessor);
-            }
-
             node.SEZ = (node.IsFinalNode)
                             ? node.FEZ
-                            : node.Ancestors.Select(n => n.SAZ).Max();
+                            : node.Ancestors.Select(n => n.SAZ).Min();
+            node.SAZ = node.SEZ - node.Duration;
+
             node.GP = node.SEZ - node.FEZ;
             node.FP = (node.IsFinalNode)
                 ? 0
@@ -104,18 +104,18 @@ namespace Netzplan
         public string GetDot()
         {
             StringBuilder dotBuilder = new StringBuilder();
-            dotBuilder.AppendLine($"digraph {Title}" + "{");
-            dotBuilder.AppendLine("node[shape=record]");
-            dotBuilder.AppendLine("rankdir = LR");
+            dotBuilder.AppendLine($"digraph {Title} {{");
+            dotBuilder.AppendLine("node [shape=record]");
+            dotBuilder.AppendLine("rankdir=LR");
 
             foreach (Node n in Nodes.Values)
             {
                 string structure =
-                    $"{n.ID} [label:\"" +
+                    $"proc{n.ID} [label=\"" +
                     $"{{FAZ={n.FAZ}|FEZ={n.FEZ}}}|" +
                     $"{{{n.ID}|{n.Description}}}|" +
                     $"{{{n.Duration}|GP={n.GP}|FP={n.FP}}}|" +
-                    $"{{FAZ={n.SAZ}|FEZ={n.SEZ}}}" +
+                    $"{{SAZ={n.SAZ}|SEZ={n.SEZ}}}" +
                     $"\"]";
                 dotBuilder.AppendLine(structure);
             }
@@ -125,7 +125,7 @@ namespace Netzplan
                 foreach (Node anc in node.Ancestors)
                 {
                     //TODO: Check if crit path -> then red
-                    string edge = $"{node.ID} -> {anc.ID}";
+                    string edge = $"proc{node.ID} -> proc{anc.ID}";
                     if (node.IsCritical && anc.IsCritical)
                     {
                         edge += " [color=\"red\"]";
