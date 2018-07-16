@@ -64,5 +64,8 @@
       <Name>Netzplan</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="help.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

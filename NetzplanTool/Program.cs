@@ -13,36 +13,50 @@ namespace NetzplanTool
 {
     class Program
     {
+        public class ApplicationArguments
+        {
+            public string CsvPath { get; set; }
+            public string OutputPath { get; set; }
+            public Enums.GraphReturnType FileFormat { get; set; }
+        }
+
         static void Main(string[] args)
         {
-            string csvPath = "";
-            string outputPath = "";
-            string fileFormat = "";
 
-            var p = new FluentCommandLineParser();
+            var parser = new FluentCommandLineParser<ApplicationArguments>();
 
-            p.Setup<string>('i', "input")
-             .Callback(value => csvPath = value)
-             .WithDescription("input file")
-             .Required();
+            parser.Setup(arg => arg.CsvPath)
+                .As('i', "input")
+                .Required();
 
-            p.Setup<string>('o', "output")
-             .Callback(value => outputPath = value)
-             .WithDescription("output file")
-             .Required();
+            parser.Setup(arg => arg.OutputPath)
+                .As('o', "output")
+                .Required();
 
-            p.Setup<string>('f', "format")
-             .Callback(value => fileFormat = value.ToLowerInvariant())
-             .SetDefault("png")
-             .WithDescription("output file format")
-             .Required();
+            parser.Setup(arg => arg.FileFormat)
+                .As('f', "format")
+                .SetDefault(Enums.GraphReturnType.Png);
 
-            p.Setup<string>('h', "help")
-             .Callback(ShowHelp)
-             .WithDescription("help");
+            parser.SetupHelp("h", "help")
+                 .Callback(text => ShowHelp());
 
-            p.Parse(args);
+            var result = parser.Parse(args);
 
+            if (result.HasErrors)
+            {
+                ShowError(result.ErrorText);
+                return;
+            }
+
+            if (result.HelpCalled == false)
+            {
+                ApplicationArguments a = parser.Object;
+                GenerateGraph(a.CsvPath, a.OutputPath, a.FileFormat);
+            }
+        }
+
+        private static void GenerateGraph(string csvPath, string outputPath, Enums.GraphReturnType fileFormat)
+        {
             var getStartProcessQuery = new GetStartProcessQuery();
             var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
             var registerLayoutPluginCommand = new RegisterLayoutPluginCommand(
@@ -61,37 +75,47 @@ namespace NetzplanTool
                 Graph graph = new Graph(graphTitle, lines);
 
                 string dot = graph.GetDot();
-                //dot = "graph graphname {rankdir = LR; a-- b; b-- c; b-- d; d-- a;}";
-                //TODO: FileFormat anpassen
-                byte[] graphBytes = wrapper.GenerateGraph(dot, Enums.GraphReturnType.Png);
-                string outputFileName = Path.Combine(outputPath, graph.Title) + ".png";
-                //TODO: Prüfen, ob Ordner existiert
+                byte[] graphBytes = wrapper.GenerateGraph(dot, fileFormat);
+
+                string outputFileName = Path.Combine(
+                    outputPath,
+                    graph.Title + "." + fileFormat.ToString().ToLowerInvariant());
                 File.WriteAllBytes(outputFileName, graphBytes);
 
-                Console.ForegroundColor = ConsoleColor.DarkGreen;
-                Console.WriteLine("Graph erfolgreich generiert");
-                Console.ResetColor();
+                ShowSuccess($"Graph \"{graph.Title}\" erfolgreich generiert. Gespeichert unter \" {outputFileName}\"");
 
                 Process.Start(outputFileName);
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Error.WriteLine(ex.Message);
-                Console.ResetColor();
-                Console.WriteLine("(Beliebige Taste zum Beenden)");
-                Console.ReadKey();
+                ShowError(ex.Message);
             }
         }
 
-        private static void ShowHelp(string obj)
+        private static void ShowSuccess(string message)
         {
-            string line = "";
-            line += "=================================" + Environment.NewLine;
-            line += "===           HILFE           ===" + Environment.NewLine;
-            line += "=================================" + Environment.NewLine;
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Error.WriteLine(message);
+            Console.ResetColor();
+        }
 
-            Console.WriteLine(line);
+        private static void ShowError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        private static void ShowHelp()
+        {
+            string helpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\help.txt");
+            string[] lines = File.ReadAllLines(helpPath);
+            Console.WriteLine();
+            foreach (string line in lines)
+            {
+                Console.WriteLine(line);
+            }
+            Console.WriteLine();
         }
     }
 }
