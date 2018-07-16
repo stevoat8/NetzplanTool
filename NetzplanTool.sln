@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetzplanTool", "NetzplanToo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netzplan", "Netzplan\Netzplan.csproj", "{0A279458-9623-4128-945A-0EA0F8AC496E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetzplanTest", "NetzplanTest\NetzplanTest.csproj", "{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{0A279458-9623-4128-945A-0EA0F8AC496E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A279458-9623-4128-945A-0EA0F8AC496E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A279458-9623-4128-945A-0EA0F8AC496E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
