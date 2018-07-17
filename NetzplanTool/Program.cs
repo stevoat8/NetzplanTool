@@ -12,10 +12,24 @@ namespace NetzplanTool
 {
     class Program
     {
+        /// <summary>
+        /// Die Startparameter der Netzplan Tool Programms.
+        /// </summary>
         public class ApplicationArguments
         {
+            /// <summary>
+            /// Speicherpfad des Projektplans (Pfad + Dateiname).
+            /// </summary>
             public string CsvPath { get; set; }
+
+            /// <summary>
+            /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
+            /// </summary>
             public string OutputPath { get; set; }
+
+            /// <summary>
+            /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
+            /// </summary>
             public Enums.GraphReturnType FileFormat { get; set; }
         }
 
@@ -49,11 +63,21 @@ namespace NetzplanTool
             if (result.HelpCalled == false)
             {
                 ApplicationArguments appArgs = parser.Object;
-                GenerateGraph(appArgs.CsvPath, appArgs.OutputPath, appArgs.FileFormat);
+                GenerateDiagram(appArgs.CsvPath, appArgs.OutputPath, appArgs.FileFormat);
             }
         }
 
-        private static void GenerateGraph(string csvPath, string outputPath, Enums.GraphReturnType fileFormat)
+        /// <summary>
+        /// Erzeugt aus einem Projektplan im CSV-Format einen Graphen, der den 
+        /// Prozess mit allen Teilprozessen und Fristen darstellt und speichert diesen.
+        /// </summary>
+        /// <param name="csvPath">Speicherpfad des Projektplans (Pfad + Dateiname).</param>
+        /// <param name="outputPath">Speicherpfad unter dem der erstellte Graph gespeichert wird.</param>
+        /// <param name="fileFormat">
+        /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
+        /// </param>
+        private static void GenerateDiagram(
+            string csvPath, string outputPath, Enums.GraphReturnType fileFormat)
         {
             var getStartProcessQuery = new GetStartProcessQuery();
             var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
@@ -90,6 +114,9 @@ namespace NetzplanTool
             }
         }
 
+        /// <summary>
+        /// Gibt das Hilfemenü auf der Konsole aus.
+        /// </summary>
         private static void ShowHelp()
         {
             string helpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\help.txt");
@@ -102,13 +129,20 @@ namespace NetzplanTool
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Gibt eine Erfolgsmeldung auf der Konsole aus.
+        /// </summary>
+        /// <param name="message">Die Nachricht, die ausgegeben wird.</param>
         private static void ShowSuccess(string message)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Error.WriteLine(message);
             Console.ResetColor();
         }
-
+        /// <summary>
+        /// Gibt eine Fehlermeldung auf der Konsole aus.
+        /// </summary>
+        /// <param name="message">Die Nachricht, die ausgegeben wird.</param>
         private static void ShowError(string message)
         {
             Console.ForegroundColor = ConsoleColor.Red;

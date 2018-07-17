@@ -6,14 +6,37 @@ using System.Threading.Tasks;
 
 namespace PrecedenceDiagram
 {
+    /// <summary>
+    /// Stellt einen Teilprozess innerhalb eines Netzplans dar.
+    /// </summary>
     public class Task
     {
+        /// <summary>
+        /// Eindeutige ID des Teilprozesses.
+        /// </summary>
         public string ID { get; set; }
+
+        /// <summary>
+        /// Beschreibung des Aufgabe des Teilprozesses.
+        /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Dauer des Teilprozesses.
+        /// </summary>
         public int Duration { get; set; }
+
+        /// <summary>
+        /// Die Teilprozesse die diesem Teilprozess direkt vorausgehen.
+        /// </summary>
         public IList<Task> Predecessors { get; set; }
+
+        /// <summary>
+        /// Die Teilprozesse die direkt auf diesen Teilprozess folgen.
+        /// </summary>
         public IList<Task> Ancestors { get; set; }
 
+        #region Fristen
         /// <summary>
         /// Frühester Anfangzeitpunkt des Teilprozesses.
         /// </summary>
@@ -44,7 +67,8 @@ namespace PrecedenceDiagram
         /// Freier Puffer des Teilprozesses. Mögliche Verzögerung, ohne dass 
         /// sich direkt folgende Teilprozesse verzögern.
         /// </summary>
-        public int FreeFloat { get; set; }
+        public int FreeFloat { get; set; } 
+        #endregion
 
         /// <summary>
         /// Der Knoten is Teil des kritischen Pfads. Verzögerungen des Teilprozesses
