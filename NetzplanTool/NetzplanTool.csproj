@@ -59,13 +59,13 @@
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Netzplan\Netzplan.csproj">
-      <Project>{0a279458-9623-4128-945a-0ea0f8ac496e}</Project>
-      <Name>Netzplan</Name>
-    </ProjectReference>
+    <Content Include="help.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="help.txt" />
+    <ProjectReference Include="..\PrecedenceDiagram\PrecedenceDiagram.csproj">
+      <Project>{79117191-8287-462f-a982-5df33e7b3b56}</Project>
+      <Name>PrecedenceDiagram</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

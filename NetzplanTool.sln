@@ -5,9 +5,7 @@ VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetzplanTool", "NetzplanTool\NetzplanTool.csproj", "{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Netzplan", "Netzplan\Netzplan.csproj", "{0A279458-9623-4128-945A-0EA0F8AC496E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetzplanTest", "NetzplanTest\NetzplanTest.csproj", "{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrecedenceDiagram", "PrecedenceDiagram\PrecedenceDiagram.csproj", "{79117191-8287-462F-A982-5DF33E7B3B56}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +17,10 @@ Global
 		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{495BF61A-3995-43C0-8F69-2DEA98ED1FA8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A279458-9623-4128-945A-0EA0F8AC496E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A279458-9623-4128-945A-0EA0F8AC496E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A279458-9623-4128-945A-0EA0F8AC496E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A279458-9623-4128-945A-0EA0F8AC496E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{35C4A5F0-7875-4DF9-92A8-AF442F3E94E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79117191-8287-462F-A982-5DF33E7B3B56}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79117191-8287-462F-A982-5DF33E7B3B56}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79117191-8287-462F-A982-5DF33E7B3B56}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79117191-8287-462F-A982-5DF33E7B3B56}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

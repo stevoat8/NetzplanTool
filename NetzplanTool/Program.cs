@@ -3,11 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Fclp;
-using Netzplan;
+using PrecedenceDiagram;
 using GraphVizWrapper;
 using GraphVizWrapper.Commands;
 using GraphVizWrapper.Queries;
-using System.Diagnostics;
 
 namespace NetzplanTool
 {
@@ -22,7 +21,6 @@ namespace NetzplanTool
 
         static void Main(string[] args)
         {
-
             var parser = new FluentCommandLineParser<ApplicationArguments>();
 
             parser.Setup(arg => arg.CsvPath)
@@ -50,8 +48,8 @@ namespace NetzplanTool
 
             if (result.HelpCalled == false)
             {
-                ApplicationArguments a = parser.Object;
-                GenerateGraph(a.CsvPath, a.OutputPath, a.FileFormat);
+                ApplicationArguments appArgs = parser.Object;
+                GenerateGraph(appArgs.CsvPath, appArgs.OutputPath, appArgs.FileFormat);
             }
         }
 
@@ -71,25 +69,37 @@ namespace NetzplanTool
             {
                 string[] lines = File.ReadAllLines(csvPath, Encoding.UTF7)
                     .Skip(1).ToArray();
-                string graphTitle = Path.GetFileNameWithoutExtension(csvPath);
-                Graph graph = new Graph(graphTitle, lines);
+                string title = Path.GetFileNameWithoutExtension(csvPath);
+                Process process = new Process(title, lines);
 
-                string dot = graph.GetDot();
+                string dot = process.GetDot();
                 byte[] graphBytes = wrapper.GenerateGraph(dot, fileFormat);
 
                 string outputFileName = Path.Combine(
                     outputPath,
-                    graph.Title + "." + fileFormat.ToString().ToLowerInvariant());
+                    process.Title + "." + fileFormat.ToString().ToLowerInvariant());
                 File.WriteAllBytes(outputFileName, graphBytes);
 
-                ShowSuccess($"Graph \"{graph.Title}\" erfolgreich generiert. Gespeichert unter \" {outputFileName}\"");
+                ShowSuccess($"Graph \"{process.Title}\" erfolgreich generiert unter \" {outputFileName}\"");
 
-                Process.Start(outputFileName);
+                System.Diagnostics.Process.Start(outputFileName);
             }
             catch (Exception ex)
             {
                 ShowError(ex.Message);
             }
+        }
+
+        private static void ShowHelp()
+        {
+            string helpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\help.txt");
+            string[] lines = File.ReadAllLines(helpPath);
+            Console.WriteLine();
+            foreach (string line in lines)
+            {
+                Console.WriteLine(line);
+            }
+            Console.WriteLine();
         }
 
         private static void ShowSuccess(string message)
@@ -106,16 +116,5 @@ namespace NetzplanTool
             Console.ResetColor();
         }
 
-        private static void ShowHelp()
-        {
-            string helpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\help.txt");
-            string[] lines = File.ReadAllLines(helpPath);
-            Console.WriteLine();
-            foreach (string line in lines)
-            {
-                Console.WriteLine(line);
-            }
-            Console.WriteLine();
-        }
     }
 }
