@@ -64,14 +64,14 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Erzeugt aus Beschreibungstexten die Teilprozesse des Prozesses.
         /// </summary>
-        /// <param name="subtasks">Beschreibungstext eines Teilprozesses.</param>
+        /// <param name="tasks">Beschreibungstext eines Teilprozesses.</param>
         /// <returns>Die Teilprozesse des Prozesses. (Ohne berechneten Fristen.)</returns>
-        private static Dictionary<string, Task> CreateTasks(string[] subtasks)
+        private static Dictionary<string, Task> CreateTasks(string[] tasks)
         {
-            Dictionary<string, Task> tasks = new Dictionary<string, Task>();
-            for (int i = 0; i < subtasks.Length; i++)
+            Dictionary<string, Task> taskDict = new Dictionary<string, Task>();
+            for (int i = 0; i < tasks.Length; i++)
             {
-                string[] props = subtasks[i].Split(';');
+                string[] props = tasks[i].Split(';');
 
                 //Vorgänger setzen
                 List<Task> predecessors = new List<Task>();
@@ -83,27 +83,27 @@ namespace PrecedenceDiagram
 
                 foreach (string pre in predecessorStrings)
                 {
-                    tasks.TryGetValue(pre, out Task preTask);
+                    taskDict.TryGetValue(pre, out Task preTask);
                     if (preTask != null)
                     {
                         predecessors.Add(preTask);
                     }
                 }
 
-                tasks.Add(
+                taskDict.Add(
                     props[0],
                     new Task(props[0], props[1], Int32.Parse(props[2]), predecessors));
             }
 
             //Nachfolger setzen
-            foreach (string key in tasks.Keys)
+            foreach (string key in taskDict.Keys)
             {
-                foreach (Task predecessor in tasks[key].Predecessors)
+                foreach (Task predecessor in taskDict[key].Predecessors)
                 {
-                    tasks[predecessor.ID].Ancestors.Add(tasks[key]);
+                    taskDict[predecessor.ID].Ancestors.Add(taskDict[key]);
                 }
             }
-            return tasks;
+            return taskDict;
         }
 
         /// <summary>
