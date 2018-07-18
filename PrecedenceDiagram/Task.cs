@@ -85,13 +85,13 @@ namespace PrecedenceDiagram
         /// Gibt an, ob der Knoten der Endknoten eines Prozesses ist.
         /// </summary>
         public bool IsFinalTask { get { return Ancestors.Count == 0; } }
-
-        public Task(string id, string description, int duration, IList<Task> predecessors)
+        
+        public Task(string id, string description, int duration)
         {
             ID = id;
             Description = description;
             Duration = duration;
-            Predecessors = predecessors;
+            Predecessors = new List<Task>();
             Ancestors = new List<Task>();
         }
 

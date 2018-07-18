@@ -30,7 +30,7 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Die Teilprozesse, aus denen der Gesamtprozess besteht.
         /// </summary>
-        public Dictionary<string, Task> Tasks { get; }
+        public List<Task> Tasks { get; }
 
         /// <summary>
         /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
@@ -41,23 +41,22 @@ namespace PrecedenceDiagram
         {
             Title = title;
 
-            Dictionary<string, Task> tasks = CreateTasks(subtasks);
+            List<Task> tasks = CreateTasks(subtasks);
 
-            IntitialTask = tasks.Values.Where(n => n.IsInitialTask).First();
-            FinalTask = tasks.Values.Where(n => n.IsFinalTask).First();
+            IntitialTask = tasks.Where(n => n.IsInitialTask).First();
+            FinalTask = tasks.Where(n => n.IsFinalTask).First();
 
-            List<string> keys = tasks.Keys.ToList();
-            foreach (string key in keys)
+            foreach (Task task in tasks)
             {
-                ScheduleForward(tasks[key]);
+                ScheduleForward(task);
             }
 
-            keys.Reverse();
-            foreach (string key in keys)
+            tasks.Reverse();
+            foreach (Task task in tasks)
             {
-                ScheduleBackwards(tasks[key]);
+                ScheduleBackwards(task);
             }
-
+            tasks.Reverse();
             Tasks = tasks;
         }
 
@@ -66,44 +65,53 @@ namespace PrecedenceDiagram
         /// </summary>
         /// <param name="tasks">Beschreibungstext eines Teilprozesses.</param>
         /// <returns>Die Teilprozesse des Prozesses. (Ohne berechneten Fristen.)</returns>
-        private static Dictionary<string, Task> CreateTasks(string[] tasks)
+        private static List<Task> CreateTasks(string[] tasks)
         {
-            Dictionary<string, Task> taskDict = new Dictionary<string, Task>();
-            for (int i = 0; i < tasks.Length; i++)
+            List<Task> taskList = new List<Task>();
+
+            //Tasks erzeugen - ohne Vorgänger und Nachfolger
+            foreach (string task in tasks)
             {
-                string[] props = tasks[i].Split(';');
+                string[] props = task.Split(';');
+                taskList.Add(new Task(props[0], props[1], Int32.Parse(props[2])));
+            }
 
-                //Vorgänger setzen
-                List<Task> predecessors = new List<Task>();
-                if (props[3] == "-")
-                {
-                    continue;
-                }
-                string[] predecessorStrings = props[3].Split(',');
+            //Vorgänger setzen
+            foreach (string taskLine in tasks)
+            {
+                string[] props = taskLine.Split(';');
 
-                foreach (string pre in predecessorStrings)
+                string id = props[0];
+                Task thisTask = taskList.Where(t => t.ID == id).First();
+
+                string[] predecessors = props[3].Split(',');
+                foreach (string pre in predecessors)
                 {
-                    taskDict.TryGetValue(pre, out Task preTask);
-                    if (preTask != null)
+                    if (pre == "-")
                     {
-                        predecessors.Add(preTask);
+                        continue;
                     }
+                    foreach (Task task in taskList)
+                    {
+                        if(task.ID == pre)
+                        {
+                            thisTask.Predecessors.Add(task);
+                        }
+                    }
+                    //TODO: Dozent fragen: Erzeugt Kopien???
+                    //thisTask.Predecessors.Add(taskList.Where(t => t.ID == pre).FirstOrDefault());
                 }
-
-                taskDict.Add(
-                    props[0],
-                    new Task(props[0], props[1], Int32.Parse(props[2]), predecessors));
             }
 
             //Nachfolger setzen
-            foreach (string key in taskDict.Keys)
+            foreach (Task task in taskList)
             {
-                foreach (Task predecessor in taskDict[key].Predecessors)
+                foreach (Task predecessor in task.Predecessors)
                 {
-                    taskDict[predecessor.ID].Ancestors.Add(taskDict[key]);
+                    predecessor.Ancestors.Add(task);
                 }
             }
-            return taskDict;
+            return taskList;
         }
 
         /// <summary>
@@ -148,19 +156,19 @@ namespace PrecedenceDiagram
             dotBuilder.AppendLine("node [shape=record]");
             dotBuilder.AppendLine("rankdir=LR");
 
-            foreach (Task n in Tasks.Values)
+            foreach (Task t in Tasks)
             {
                 string structure =
-                    $"proc{n.ID} [label=\"" +
-                    $"{{FAZ={n.EarliestStart}|FEZ={n.EarliestFinish}}}|" +
-                    $"{{{n.ID}|{n.Description}}}|" +
-                    $"{{{n.Duration}|GP={n.TotalFloat}|FP={n.FreeFloat}}}|" +
-                    $"{{SAZ={n.LatestStart}|SEZ={n.LatestFinish}}}" +
+                    $"proc{t.ID} [label=\"" +
+                    $"{{FAZ={t.EarliestStart}|FEZ={t.EarliestFinish}}}|" +
+                    $"{{{t.ID}|{t.Description}}}|" +
+                    $"{{{t.Duration}|GP={t.TotalFloat}|FP={t.FreeFloat}}}|" +
+                    $"{{SAZ={t.LatestStart}|SEZ={t.LatestFinish}}}" +
                     $"\"]";
                 dotBuilder.AppendLine(structure);
             }
 
-            foreach (Task task in Tasks.Values)
+            foreach (Task task in Tasks)
             {
                 foreach (Task anc in task.Ancestors)
                 {
