@@ -13,6 +13,8 @@ namespace NetzplanTool
 {
     internal class Program
     {
+        public int Test { get; set; }
+
         private static void Main(string[] args)
         {
             var parser = new FluentCommandLineParser<NetzplanToolArguments>();
