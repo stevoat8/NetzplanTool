@@ -13,28 +13,6 @@ namespace PrecedenceDiagram
     public class Process
     {
         /// <summary>
-        /// Der Titel eines Prozesses.
-        /// </summary>
-        public string Title { get; set; }
-
-        /// <summary>
-        /// Die Teilprozesse, aus denen der Gesamtprozess besteht.
-        /// </summary>
-        internal List<Task> Tasks { get; }
-
-        /// <summary>
-        /// Erzeugt eien textuelle Repräsentation des Prozesses.
-        /// </summary>
-        private string DebuggerDisplay
-        {
-            get
-            {
-                int count = (Tasks == null) ? 0 : Tasks.Count;
-                return $"{Title}: Count={count}";
-            }
-        }
-
-        /// <summary>
         /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
         /// </summary>
         /// <param name="title">Der Titel des erstellten Prozesses.</param>
@@ -75,6 +53,28 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
+        /// Der Titel eines Prozesses.
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// Die Teilprozesse, aus denen der Gesamtprozess besteht.
+        /// </summary>
+        internal List<Task> Tasks { get; }
+
+        /// <summary>
+        /// Erzeugt eien textuelle Repräsentation des Prozesses.
+        /// </summary>
+        private string DebuggerDisplay
+        {
+            get
+            {
+                int count = (Tasks == null) ? 0 : Tasks.Count;
+                return $"{Title}: Count={count}";
+            }
+        }
+        
+        /// <summary>
         /// Erzeugt einen Text im DOT-Format, der den Prozess samt Teilprozessen beschreibt.
         /// </summary>
         /// <returns>Beschreibung der Prozessstruktur im DOT-Format.</returns>
@@ -87,7 +87,7 @@ namespace PrecedenceDiagram
 
             foreach (Task task in Tasks)
             {
-                dotBuilder.AppendLine(task.GetDot());
+                dotBuilder.AppendLine(task.GetNodeDot());
             }
 
             foreach (Task task in Tasks)
@@ -128,10 +128,8 @@ namespace PrecedenceDiagram
         {
             foreach (Task task in tasks)
             {
-                foreach (Task predecessor in task.Predecessors)
-                {
-                    predecessor.Ancestors.Add(task);
-                }
+                task.Ancestors.AddRange(
+                    tasks.Where(t => t.Predecessors.Contains(task)));
             }
         }
 
@@ -150,13 +148,9 @@ namespace PrecedenceDiagram
                 Task task = tasks.Where(t => t.ID == id).First();
 
                 string[] predecessorIds = properties[3].Split(',');
+
                 foreach (string preId in predecessorIds)
                 {
-                    if (preId == "-")
-                    {
-                        continue;
-                    }
-                    //Alle Tasks, die dieselbe ID haben, wie die ID des betrachteten Task
                     task.Predecessors.AddRange(tasks.Where(t => t.ID == preId));
                 }
             }

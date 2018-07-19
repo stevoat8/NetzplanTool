@@ -142,7 +142,7 @@ namespace PrecedenceDiagram
         /// anderen Teilprozessen.
         /// </summary>
         /// <returns>Dot des Teilprozesses.</returns>
-        internal string GetDot()
+        internal string GetNodeDot()
         {
             return
                 $"proc{ID} [label=\"" +

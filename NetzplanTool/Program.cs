@@ -13,27 +13,6 @@ namespace NetzplanTool
 {
     internal class Program
     {
-        /// <summary>
-        /// Die Startparameter der Netzplan Tool Programms.
-        /// </summary>
-        public class NetzplanToolArguments
-        {
-            /// <summary>
-            /// Speicherpfad des Projektplans (Pfad + Dateiname).
-            /// </summary>
-            public string CsvPath { get; internal set; }
-
-            /// <summary>
-            /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
-            /// </summary>
-            public string OutputPath { get; internal set; }
-
-            /// <summary>
-            /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
-            /// </summary>
-            public Enums.GraphReturnType OutputFileFormat { get; internal set; }
-        }
-
         private static void Main(string[] args)
         {
             var parser = new FluentCommandLineParser<NetzplanToolArguments>();
@@ -49,7 +28,7 @@ namespace NetzplanTool
             parser.Setup(arg => arg.OutputFileFormat)
                 .As('f', "format")
                 .SetDefault(Enums.GraphReturnType.Png);
-            
+
             parser.SetupHelp("h", "help")
                  .Callback(text => ShowHelp());
 
@@ -65,6 +44,93 @@ namespace NetzplanTool
             {
                 StartNetzplanTool(parser.Object);
             }
+        }
+
+        /// <summary>
+        /// Erzeugt aus einem Projektplan ein Diagramm im übergebenen Dateiformat, das den Prozess
+        /// mit allen Teilprozessen und Fristen darstellt.
+        /// </summary>
+        /// <param name="processTitle">Titel des Prozesses</param>
+        /// <param name="processPlan">Der Prozessplan, nach dem das Diagramm erzeugt wird.</param>
+        /// <param name="fileFormat">Dateiformat in dem die Diagramm-Grafik erzeugt wird.</param>
+        /// <returns>Digramm-Grafik des Prozesses.</returns>
+        private static byte[] GenerateDiagram(string processTitle, string[] processPlan, Enums.GraphReturnType fileFormat)
+        {
+            #region Arrange graphViz wrapper
+
+            var getStartProcessQuery = new GetStartProcessQuery();
+            var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
+            var registerLayoutPluginCommand = new RegisterLayoutPluginCommand(
+                getProcessStartInfoQuery, getStartProcessQuery);
+
+            GraphGeneration wrapper = new GraphGeneration(
+                getStartProcessQuery,
+                getProcessStartInfoQuery,
+                registerLayoutPluginCommand);
+
+            #endregion Arrange graphViz wrapper
+
+            Process process = new Process(processTitle, processPlan);
+
+            string digramDot = process.GetDot();
+            byte[] digramGraphic = wrapper.GenerateGraph(digramDot, fileFormat);
+            return digramGraphic;
+        }
+
+        /// <summary>
+        /// Liest den Prozessplan im CSV-Format unter dem übergebenen Dateipfad ein.
+        /// </summary>
+        /// <param name="fileName">Dateipfad der Prozessplan-CSV-Datei.</param>
+        /// <returns>Die Teilprozesse des Prozessplans.</returns>
+        private static string[] ReadProcessPlan(string fileName)
+        {
+            string[] fileLines = File.ReadAllLines(fileName, Encoding.UTF7);
+            string firstLine = fileLines[0];
+            if (Regex.IsMatch(firstLine, @"\w+;\w+;\w+;\w+"))
+            {
+                return fileLines.Skip(1).ToArray();
+            }
+            else
+            {
+                throw new FormatException("Die CSV-Datei hat keine Kopfzeile.");
+            }
+        }
+
+        /// <summary>
+        /// Gibt eine Fehlermeldung auf der Konsole aus.
+        /// </summary>
+        /// <param name="message">Die Nachricht, die ausgegeben wird.</param>
+        private static void ShowError(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Error.WriteLine(message);
+            Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Gibt das Hilfemenü auf der Konsole aus.
+        /// </summary>
+        private static void ShowHelp()
+        {
+            string helpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\help.txt");
+            string[] lines = File.ReadAllLines(helpPath);
+            Console.WriteLine();
+            foreach (string line in lines)
+            {
+                Console.WriteLine(line);
+            }
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Gibt eine Erfolgsmeldung auf der Konsole aus.
+        /// </summary>
+        /// <param name="message">Die Nachricht, die ausgegeben wird.</param>
+        private static void ShowSuccess(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Error.WriteLine(message);
+            Console.ResetColor();
         }
 
         /// <summary>
@@ -97,88 +163,24 @@ namespace NetzplanTool
         }
 
         /// <summary>
-        /// Erzeugt aus einem Projektplan ein Diagramm im übergebenen Dateiformat, das den Prozess
-        /// mit allen Teilprozessen und Fristen darstellt.
+        /// Die Startparameter der Netzplan Tool Programms.
         /// </summary>
-        /// <param name="processTitle">Titel des Prozesses</param>
-        /// <param name="processPlan">Der Prozessplan, nach dem das Diagramm erzeugt wird.</param>
-        /// <param name="fileFormat">Dateiformat in dem die Diagramm-Grafik erzeugt wird.</param>
-        /// <returns>Digramm-Grafik des Prozesses.</returns>
-        private static byte[] GenerateDiagram(string processTitle, string[] processPlan, Enums.GraphReturnType fileFormat)
+        public class NetzplanToolArguments
         {
-            #region Arrange graphViz wrapper
-            var getStartProcessQuery = new GetStartProcessQuery();
-            var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
-            var registerLayoutPluginCommand = new RegisterLayoutPluginCommand(
-                getProcessStartInfoQuery, getStartProcessQuery);
+            /// <summary>
+            /// Speicherpfad des Projektplans (Pfad + Dateiname).
+            /// </summary>
+            public string CsvPath { get; internal set; }
 
-            GraphGeneration wrapper = new GraphGeneration(
-                getStartProcessQuery,
-                getProcessStartInfoQuery,
-                registerLayoutPluginCommand);
-            #endregion
+            /// <summary>
+            /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
+            /// </summary>
+            public Enums.GraphReturnType OutputFileFormat { get; internal set; }
 
-            Process process = new Process(processTitle, processPlan);
-
-            string digramDot = process.GetDot();
-            byte[] digramGraphic = wrapper.GenerateGraph(digramDot, fileFormat);
-            return digramGraphic;
-        }
-
-        /// <summary>
-        /// Liest den Prozessplan im CSV-Format unter dem übergebenen Dateipfad ein.
-        /// </summary>
-        /// <param name="fileName">Dateipfad der Prozessplan-CSV-Datei.</param>
-        /// <returns>Die Teilprozesse des Prozessplans.</returns>
-        private static string[] ReadProcessPlan(string fileName)
-        {
-            string[] fileLines = File.ReadAllLines(fileName, Encoding.UTF7);
-            string firstLine = fileLines[0];
-            if (Regex.IsMatch(firstLine, @"\w+;\w+;\w+;\w+"))
-            {
-                return fileLines.Skip(1).ToArray();
-            }
-            else
-            {
-                throw new FormatException("Die CSV-Datei hat keine Kopfzeile.");
-            }
-        }
-
-        /// <summary>
-        /// Gibt das Hilfemenü auf der Konsole aus.
-        /// </summary>
-        private static void ShowHelp()
-        {
-            string helpPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\help.txt");
-            string[] lines = File.ReadAllLines(helpPath);
-            Console.WriteLine();
-            foreach (string line in lines)
-            {
-                Console.WriteLine(line);
-            }
-            Console.WriteLine();
-        }
-
-        /// <summary>
-        /// Gibt eine Erfolgsmeldung auf der Konsole aus.
-        /// </summary>
-        /// <param name="message">Die Nachricht, die ausgegeben wird.</param>
-        private static void ShowSuccess(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Error.WriteLine(message);
-            Console.ResetColor();
-        }
-
-        /// <summary>
-        /// Gibt eine Fehlermeldung auf der Konsole aus.
-        /// </summary>
-        /// <param name="message">Die Nachricht, die ausgegeben wird.</param>
-        private static void ShowError(string message)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.Error.WriteLine(message);
-            Console.ResetColor();
+            /// <summary>
+            /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
+            /// </summary>
+            public string OutputPath { get; internal set; }
         }
     }
 }
