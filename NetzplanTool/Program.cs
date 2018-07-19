@@ -13,7 +13,6 @@ namespace NetzplanTool
 {
     internal class Program
     {
-        public int Test { get; set; }
 
         private static void Main(string[] args)
         {
@@ -56,7 +55,8 @@ namespace NetzplanTool
         /// <param name="processPlan">Der Prozessplan, nach dem das Diagramm erzeugt wird.</param>
         /// <param name="fileFormat">Dateiformat in dem die Diagramm-Grafik erzeugt wird.</param>
         /// <returns>Digramm-Grafik des Prozesses.</returns>
-        private static byte[] GenerateDiagram(string processTitle, string[] processPlan, Enums.GraphReturnType fileFormat)
+        private static byte[] GenerateDiagram(
+            string processTitle, string[] processPlan, Enums.GraphReturnType fileFormat)
         {
             #region Arrange graphViz wrapper
 
