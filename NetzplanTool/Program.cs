@@ -13,7 +13,6 @@ namespace NetzplanTool
 {
     internal class Program
     {
-
         private static void Main(string[] args)
         {
             var parser = new FluentCommandLineParser<NetzplanToolArguments>();
@@ -167,22 +166,22 @@ namespace NetzplanTool
         /// <summary>
         /// Die Startparameter der Netzplan Tool Programms.
         /// </summary>
-        class NetzplanToolArguments
+        internal class NetzplanToolArguments
         {
             /// <summary>
             /// Speicherpfad des Projektplans (Pfad + Dateiname).
             /// </summary>
-            string CsvPath { get; set; }
+            internal string CsvPath { get; set; }
 
             /// <summary>
             /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
             /// </summary>
-            Enums.GraphReturnType OutputFileFormat { get; set; }
+            internal Enums.GraphReturnType OutputFileFormat { get; set; }
 
             /// <summary>
             /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
             /// </summary>
-            string OutputPath { get; set; }
+            internal string OutputPath { get; set; }
         }
     }
 }
