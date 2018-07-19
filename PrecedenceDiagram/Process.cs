@@ -1,179 +1,159 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace PrecedenceDiagram
 {
     /// <summary>
     /// Stellt einen Prozess dar, der von einem Netzplan repräsentiert wird.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class Process
     {
+        /// <summary>
+        /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
+        /// </summary>
+        /// <param name="title">Der Titel des erstellten Prozesses.</param>
+        /// <param name="processPlan">
+        /// Beschreibungen der Teilprozesse, aus denen der Gesamtprozess besteht.
+        /// </param>
+        public Process(string title, string[] processPlan)
+        {
+            try
+            {
+                Title = title;
+
+                List<Task> tasks = CreateTasks(processPlan);
+                SetPredecessors(tasks, processPlan);
+                SetAncestors(tasks);
+
+                //ScheduleForward
+                foreach (Task task in tasks)
+                {
+                    task.SetStartingPoints();
+                }
+
+                //ScheduleBackwards
+                tasks.Reverse();
+                foreach (Task task in tasks)
+                {
+                    task.SetFinishingPoints();
+                    task.SetBuffers();
+                }
+                tasks.Reverse();
+
+                Tasks = tasks;
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("Der Prozessplan hat ungültiges Format.", ex);
+            }
+        }
+
         /// <summary>
         /// Der Titel eines Prozesses.
         /// </summary>
         public string Title { get; set; }
 
         /// <summary>
-        /// Der erste Teilprozess. Es kann immer nur einen geben.
-        /// </summary>
-        public Task IntitialTask { get; set; }
-
-        /// <summary>
-        /// Der letzte Teilprozess. Es kann immer nur einen geben.
-        /// </summary>
-        public Task FinalTask { get; set; }
-
-        /// <summary>
         /// Die Teilprozesse, aus denen der Gesamtprozess besteht.
         /// </summary>
-        public Dictionary<string, Task> Tasks { get; }
+        internal List<Task> Tasks { get; }
 
         /// <summary>
-        /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
+        /// Erzeugt eien textuelle Repräsentation des Prozesses.
         /// </summary>
-        /// <param name="title">Der Titel des erstellten Prozesses.</param>
-        /// <param name="subtasks">Beschreibungen der Teilprozesse, aus denen der Gesamtprozess besteht.</param>
-        public Process(string title, string[] subtasks)
+        private string DebuggerDisplay
         {
-            Title = title;
-
-            Dictionary<string, Task> tasks = CreateTasks(subtasks);
-
-            IntitialTask = tasks.Values.Where(n => n.IsInitialTask).First();
-            FinalTask = tasks.Values.Where(n => n.IsFinalTask).First();
-
-            List<string> keys = tasks.Keys.ToList();
-            foreach (string key in keys)
+            get
             {
-                ScheduleForward(tasks[key]);
+                int count = (Tasks == null) ? 0 : Tasks.Count;
+                return $"{Title}: Count={count}";
             }
-
-            keys.Reverse();
-            foreach (string key in keys)
-            {
-                ScheduleBackwards(tasks[key]);
-            }
-
-            Tasks = tasks;
         }
-
-        /// <summary>
-        /// Erzeugt aus Beschreibungstexten die Teilprozesse des Prozesses.
-        /// </summary>
-        /// <param name="tasks">Beschreibungstext eines Teilprozesses.</param>
-        /// <returns>Die Teilprozesse des Prozesses. (Ohne berechneten Fristen.)</returns>
-        private static Dictionary<string, Task> CreateTasks(string[] tasks)
-        {
-            Dictionary<string, Task> taskDict = new Dictionary<string, Task>();
-            for (int i = 0; i < tasks.Length; i++)
-            {
-                string[] props = tasks[i].Split(';');
-
-                //Vorgänger setzen
-                List<Task> predecessors = new List<Task>();
-                if (props[3] == "-")
-                {
-                    continue;
-                }
-                string[] predecessorStrings = props[3].Split(',');
-
-                foreach (string pre in predecessorStrings)
-                {
-                    taskDict.TryGetValue(pre, out Task preTask);
-                    if (preTask != null)
-                    {
-                        predecessors.Add(preTask);
-                    }
-                }
-
-                taskDict.Add(
-                    props[0],
-                    new Task(props[0], props[1], Int32.Parse(props[2]), predecessors));
-            }
-
-            //Nachfolger setzen
-            foreach (string key in taskDict.Keys)
-            {
-                foreach (Task predecessor in taskDict[key].Predecessors)
-                {
-                    taskDict[predecessor.ID].Ancestors.Add(taskDict[key]);
-                }
-            }
-            return taskDict;
-        }
-
-        /// <summary>
-        /// Vorwärtsterminierung berechnet den frühesten Anfangs- und Endzeitpunkt.
-        /// </summary>
-        /// <param name="task"></param>
-        private static void ScheduleForward(Task task)
-        {
-            task.EarliestStart = (task.IsInitialTask)
-                ? 0
-                : task.Predecessors.Select(n => n.EarliestStart + n.Duration).Max();
-            task.EarliestFinish = task.EarliestStart + task.Duration;
-        }
-
-        /// <summary>
-        /// Rückwärtsterminierung berechnet den spätesten Anfangs- und Endzeitpunkt, sowie den
-        /// freien und gesamten Puffer.
-        /// </summary>
-        /// <param name="task"></param>
-        private static void ScheduleBackwards(Task task)
-        {
-            task.LatestFinish = (task.IsFinalTask)
-                            ? task.EarliestFinish
-                            : task.Ancestors.Select(n => n.LatestStart).Min();
-            task.LatestStart = task.LatestFinish - task.Duration;
-
-            task.TotalFloat = task.LatestFinish - task.EarliestFinish;
-            task.FreeFloat = (task.IsFinalTask)
-                ? 0
-                : task.Ancestors.Select(n => n.EarliestStart).Min() - task.EarliestFinish;
-        }
-
+        
         /// <summary>
         /// Erzeugt einen Text im DOT-Format, der den Prozess samt Teilprozessen beschreibt.
-        /// DOT ist eine Beschreibungssprache für die visuelle Darstellung von Graphen.
         /// </summary>
         /// <returns>Beschreibung der Prozessstruktur im DOT-Format.</returns>
         public string GetDot()
         {
             StringBuilder dotBuilder = new StringBuilder();
             dotBuilder.AppendLine($"digraph {Title} {{");
-            dotBuilder.AppendLine("node [shape=record]");
-            dotBuilder.AppendLine("rankdir=LR");
+            dotBuilder.AppendLine("node [shape=record];");
+            dotBuilder.AppendLine("rankdir=LR;");
 
-            foreach (Task n in Tasks.Values)
+            foreach (Task task in Tasks)
             {
-                string structure =
-                    $"proc{n.ID} [label=\"" +
-                    $"{{FAZ={n.EarliestStart}|FEZ={n.EarliestFinish}}}|" +
-                    $"{{{n.ID}|{n.Description}}}|" +
-                    $"{{{n.Duration}|GP={n.TotalFloat}|FP={n.FreeFloat}}}|" +
-                    $"{{SAZ={n.LatestStart}|SEZ={n.LatestFinish}}}" +
-                    $"\"]";
-                dotBuilder.AppendLine(structure);
+                dotBuilder.AppendLine(task.GetNodeDot());
             }
 
-            foreach (Task task in Tasks.Values)
+            foreach (Task task in Tasks)
             {
-                foreach (Task anc in task.Ancestors)
+                string edgeDot = task.GetEdgeDot();
+                if (String.IsNullOrWhiteSpace(edgeDot) == false)
                 {
-                    string edge = $"proc{task.ID} -> proc{anc.ID}";
-                    if (task.IsCritical && anc.IsCritical)
-                    {
-                        edge += " [color=\"red\"]";
-                    }
-                    dotBuilder.AppendLine(edge);
+                    dotBuilder.Append(edgeDot);
                 }
             }
             dotBuilder.AppendLine("}");
             return dotBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Erzeugt aus dem Prozessplan die Teilprozesse des Prozesses. Ohne Vorgänger, Nachfolger
+        /// und ohne berechnete Fristen.
+        /// </summary>
+        /// <param name="processPlan">Prozessplan, der die einzelnen Unterprozesse beschreibt.</param>
+        /// <returns>Die Teilprozesse des Prozesses. (Ohne berechneten Fristen.)</returns>
+        private static List<Task> CreateTasks(string[] processPlan)
+        {
+            List<Task> taskList = new List<Task>();
+
+            foreach (string task in processPlan)
+            {
+                string[] props = task.Split(';');
+                taskList.Add(new Task(props[0], props[1], Int32.Parse(props[2])));
+            }
+            return taskList;
+        }
+
+        /// <summary>
+        /// Weist jedem Teilprozess seine Nachfolger zu.
+        /// </summary>
+        /// <param name="tasks">Liste der erstellten Teilprozesse.</param>
+        private void SetAncestors(List<Task> tasks)
+        {
+            foreach (Task task in tasks)
+            {
+                task.Ancestors.AddRange(
+                    tasks.Where(t => t.Predecessors.Contains(task)));
+            }
+        }
+
+        /// <summary>
+        /// Weist jedem Teilprozess, entsprechend dem Projektplan, seinen Vorgänger zu.
+        /// </summary>
+        /// <param name="tasks">Die Liste der erstellten Teilprozesse.</param>
+        /// <param name="processPlan">Der Projektplans bzw, der Inhalt der CSV-Datei</param>
+        private void SetPredecessors(List<Task> tasks, string[] processPlan)
+        {
+            foreach (string line in processPlan)
+            {
+                string[] properties = line.Split(';');
+
+                string id = properties[0];
+                Task task = tasks.Where(t => t.ID == id).First();
+
+                string[] predecessorIds = properties[3].Split(',');
+
+                foreach (string preId in predecessorIds)
+                {
+                    task.Predecessors.AddRange(tasks.Where(t => t.ID == preId));
+                }
+            }
         }
     }
 }
