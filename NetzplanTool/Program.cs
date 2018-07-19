@@ -165,22 +165,22 @@ namespace NetzplanTool
         /// <summary>
         /// Die Startparameter der Netzplan Tool Programms.
         /// </summary>
-        public class NetzplanToolArguments
+        class NetzplanToolArguments
         {
             /// <summary>
             /// Speicherpfad des Projektplans (Pfad + Dateiname).
             /// </summary>
-            public string CsvPath { get; internal set; }
+            string CsvPath { get; set; }
 
             /// <summary>
             /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
             /// </summary>
-            public Enums.GraphReturnType OutputFileFormat { get; internal set; }
+            Enums.GraphReturnType OutputFileFormat { get; set; }
 
             /// <summary>
             /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
             /// </summary>
-            public string OutputPath { get; internal set; }
+            string OutputPath { get; set; }
         }
     }
 }
