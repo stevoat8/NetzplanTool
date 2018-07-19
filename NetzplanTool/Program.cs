@@ -177,6 +177,7 @@ namespace NetzplanTool
             /// <summary>
             /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
             /// </summary>
+            Enums.GraphReturnType OutputFileFormat { get; set; }
 
             /// <summary>
             /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
