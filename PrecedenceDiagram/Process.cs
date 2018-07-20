@@ -13,46 +13,6 @@ namespace PrecedenceDiagram
     public class Process
     {
         /// <summary>
-        /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
-        /// </summary>
-        /// <param name="title">Der Titel des erstellten Prozesses.</param>
-        /// <param name="processPlan">
-        /// Beschreibungen der Teilprozesse, aus denen der Gesamtprozess besteht.
-        /// </param>
-        public Process(string title, string[] processPlan)
-        {
-            try
-            {
-                Title = title;
-
-                List<Task> tasks = CreateTasks(processPlan);
-                SetPredecessors(tasks, processPlan);
-                SetAncestors(tasks);
-
-                //ScheduleForward
-                foreach (Task task in tasks)
-                {
-                    task.SetStartingPoints();
-                }
-
-                //ScheduleBackwards
-                tasks.Reverse();
-                foreach (Task task in tasks)
-                {
-                    task.SetFinishingPoints();
-                    task.SetBuffers();
-                }
-                tasks.Reverse();
-
-                Tasks = tasks;
-            }
-            catch (Exception ex)
-            {
-                throw new FormatException("Der Prozessplan hat ungültiges Format.", ex);
-            }
-        }
-
-        /// <summary>
         /// Der Titel eines Prozesses.
         /// </summary>
         public string Title { get; set; }
@@ -74,6 +34,46 @@ namespace PrecedenceDiagram
             }
         }
         
+        /// <summary>
+        /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
+        /// </summary>
+        /// <param name="title">Der Titel des erstellten Prozesses.</param>
+        /// <param name="processPlan">
+        /// Beschreibungen der Teilprozesse, aus denen der Gesamtprozess besteht.
+        /// </param>
+        public Process(string title, string[] processPlan)
+        {
+            try
+            {
+                Title = title;
+
+                List<Task> tasks = CreateTasks(processPlan);
+                SetPredecessors(tasks, processPlan);
+                SetAncestors(tasks);
+
+                //Schedule forward
+                foreach (Task task in tasks)
+                {
+                    task.SetStartingPoints();
+                }
+
+                //Schedule backward
+                tasks.Reverse();
+                foreach (Task task in tasks)
+                {
+                    task.SetFinishingPoints();
+                    task.SetFloat();
+                }
+                tasks.Reverse();
+
+                Tasks = tasks;
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("Der Prozessplan hat ein ungültiges Format.", ex);
+            }
+        }
+
         /// <summary>
         /// Erzeugt einen Text im DOT-Format, der den Prozess samt Teilprozessen beschreibt.
         /// </summary>
@@ -124,7 +124,7 @@ namespace PrecedenceDiagram
         /// Weist jedem Teilprozess seine Nachfolger zu.
         /// </summary>
         /// <param name="tasks">Liste der erstellten Teilprozesse.</param>
-        private void SetAncestors(List<Task> tasks)
+        private static void SetAncestors(List<Task> tasks)
         {
             foreach (Task task in tasks)
             {
@@ -138,7 +138,7 @@ namespace PrecedenceDiagram
         /// </summary>
         /// <param name="tasks">Die Liste der erstellten Teilprozesse.</param>
         /// <param name="processPlan">Der Projektplans bzw, der Inhalt der CSV-Datei</param>
-        private void SetPredecessors(List<Task> tasks, string[] processPlan)
+        private static void SetPredecessors(List<Task> tasks, string[] processPlan)
         {
             foreach (string line in processPlan)
             {

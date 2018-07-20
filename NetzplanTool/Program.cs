@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace NetzplanTool
 {
-    internal class Program
+    public class Program
     {
         private static void Main(string[] args)
         {
@@ -43,6 +43,35 @@ namespace NetzplanTool
             if (parseResult.HelpCalled == false)
             {
                 StartNetzplanTool(parser.Object);
+            }
+        }
+
+        /// <summary>
+        /// Startet das Netzplan Tool Programm, das eine Prozess-Grafik erstellt.
+        /// </summary>
+        /// <param name="args">Die nötigen Parameter.</param>
+        private static void StartNetzplanTool(NetzplanToolArguments args)
+        {
+            try
+            {
+                string[] processPlan = ReadProcessPlan(args.CsvPath);
+                string processTitle = Path.GetFileNameWithoutExtension(args.CsvPath);
+
+                byte[] digramGraphic = GenerateDiagram(processTitle, processPlan, args.OutputFileFormat);
+
+                string outputFileName = processTitle + "." + args.OutputFileFormat.ToString().ToLowerInvariant();
+                string fullOutputFileName = Path.Combine(args.OutputPath, outputFileName);
+                File.WriteAllBytes(fullOutputFileName, digramGraphic);
+
+                ShowSuccess($"Netzplan generiert unter \"{fullOutputFileName}\"");
+
+#if (DEBUG)
+                System.Diagnostics.Process.Start(fullOutputFileName);
+#endif
+            }
+            catch (Exception ex)
+            {
+                ShowError(ex.Message);
             }
         }
 
@@ -132,35 +161,6 @@ namespace NetzplanTool
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Error.WriteLine(message);
             Console.ResetColor();
-        }
-
-        /// <summary>
-        /// Startet das Netzplan Tool Programm, das eine Prozess-Grafik erstellt.
-        /// </summary>
-        /// <param name="args">Die nötigen Parameter.</param>
-        private static void StartNetzplanTool(NetzplanToolArguments args)
-        {
-            try
-            {
-                string[] processPlan = ReadProcessPlan(args.CsvPath);
-                string processTitle = Path.GetFileNameWithoutExtension(args.CsvPath);
-
-                byte[] digramGraphic = GenerateDiagram(processTitle, processPlan, args.OutputFileFormat);
-
-                string outputFileName = processTitle + "." + args.OutputFileFormat.ToString().ToLowerInvariant();
-                string fullOutputFileName = Path.Combine(args.OutputPath, outputFileName);
-                File.WriteAllBytes(fullOutputFileName, digramGraphic);
-
-                ShowSuccess($"Netzplan generiert unter \"{fullOutputFileName}\"");
-
-#if (DEBUG)
-                System.Diagnostics.Process.Start(fullOutputFileName);
-#endif
-            }
-            catch (Exception ex)
-            {
-                ShowError(ex.Message);
-            }
         }
 
         /// <summary>
