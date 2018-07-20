@@ -77,7 +77,7 @@ namespace NetzplanTool
 
         /// <summary>
         /// Erzeugt aus einem Projektplan ein Diagramm im übergebenen Dateiformat, das den Prozess
-        /// mit allen Teilprozessen und Fristen darstellt.
+        /// mit allen Vorgängen und Fristen darstellt.
         /// </summary>
         /// <param name="processTitle">Titel des Prozesses</param>
         /// <param name="processPlan">Der Prozessplan, nach dem das Diagramm erzeugt wird.</param>
@@ -111,7 +111,7 @@ namespace NetzplanTool
         /// Liest den Prozessplan im CSV-Format unter dem übergebenen Dateipfad ein.
         /// </summary>
         /// <param name="fileName">Dateipfad der Prozessplan-CSV-Datei.</param>
-        /// <returns>Die Teilprozesse des Prozessplans.</returns>
+        /// <returns>Die einzelnen Prozessvorgänge.</returns>
         private static string[] ReadProcessPlan(string fileName)
         {
             string[] fileLines = File.ReadAllLines(fileName, Encoding.UTF7);

@@ -7,7 +7,7 @@ using System.Text;
 namespace PrecedenceDiagram
 {
     /// <summary>
-    /// Stellt einen Prozess dar, der von einem Netzplan repräsentiert wird.
+    /// Stellt einen Prozess dar, der aus einzelnen Vorgängen besteht und von einem Netzplan repräsentiert wird.
     /// </summary>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class Process
@@ -18,7 +18,7 @@ namespace PrecedenceDiagram
         public string Title { get; set; }
 
         /// <summary>
-        /// Die Teilprozesse, aus denen der Gesamtprozess besteht.
+        /// Die einzelnen Vorgänge des Prozesses.
         /// </summary>
         internal List<Task> Tasks { get; }
 
@@ -33,40 +33,36 @@ namespace PrecedenceDiagram
                 return $"{Title}: Count={count}";
             }
         }
-        
+
         /// <summary>
-        /// Erzeugt aus den Beschreibungen der Teilprozesse einen Gesamtprozeess und berechnet die Fristen.
+        /// Erzeugt aus dem Prozessplan (welcher die einzelnen Vorgänge beschreibt) einen Gesamtprozeess und berechnet die Fristen.
         /// </summary>
-        /// <param name="title">Der Titel des erstellten Prozesses.</param>
-        /// <param name="processPlan">
-        /// Beschreibungen der Teilprozesse, aus denen der Gesamtprozess besteht.
-        /// </param>
+        /// <param name="title">Der Titel des Prozesses.</param>
+        /// <param name="processPlan">Beschreibungen der einzelnen Prozessvorgänge./// </param>
         public Process(string title, string[] processPlan)
         {
             try
             {
                 Title = title;
 
-                List<Task> tasks = CreateTasks(processPlan);
-                SetPredecessors(tasks, processPlan);
-                SetAncestors(tasks);
+                Tasks = CreateTasks(processPlan);
+                SetPredecessors(processPlan);
+                SetAncestors();
 
                 //Schedule forward
-                foreach (Task task in tasks)
+                foreach (Task task in Tasks)
                 {
                     task.SetStartingPoints();
                 }
 
                 //Schedule backward
-                tasks.Reverse();
-                foreach (Task task in tasks)
+                Tasks.Reverse();
+                foreach (Task task in Tasks)
                 {
                     task.SetFinishingPoints();
                     task.SetFloat();
                 }
-                tasks.Reverse();
-
-                Tasks = tasks;
+                Tasks.Reverse();
             }
             catch (Exception ex)
             {
@@ -75,9 +71,9 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Erzeugt einen Text im DOT-Format, der den Prozess samt Teilprozessen beschreibt.
+        /// Erzeugt einen Text im DOT-Format, der den gesamten Prozess beschreibt.
         /// </summary>
-        /// <returns>Beschreibung der Prozessstruktur im DOT-Format.</returns>
+        /// <returns>Beschreibung des gesamten Prozesses im DOT-Format.</returns>
         public string GetDot()
         {
             StringBuilder dotBuilder = new StringBuilder();
@@ -103,56 +99,54 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Erzeugt aus dem Prozessplan die Teilprozesse des Prozesses. Ohne Vorgänger, Nachfolger
-        /// und ohne berechnete Fristen.
+        /// Erzeugt gemäß des Prozessplans die einzelnen Vorgänge des Prozesses.
+        /// Die Vorgänge sind noch nicht verbunden und die Fristen nicht berechnet.
         /// </summary>
-        /// <param name="processPlan">Prozessplan, der die einzelnen Unterprozesse beschreibt.</param>
-        /// <returns>Die Teilprozesse des Prozesses. (Ohne berechneten Fristen.)</returns>
+        /// <param name="processPlan">Prozessplan, der die einzelnen Vörgänge beschreibt.</param>
+        /// <returns>Die Vörgänge des Prozesses.</returns>
         private static List<Task> CreateTasks(string[] processPlan)
         {
             List<Task> taskList = new List<Task>();
 
             foreach (string task in processPlan)
             {
-                string[] props = task.Split(';');
-                taskList.Add(new Task(props[0], props[1], Int32.Parse(props[2])));
+                string[] properties = task.Split(';');
+                taskList.Add(new Task(properties[0], properties[1], Int32.Parse(properties[2])));
             }
             return taskList;
         }
 
         /// <summary>
-        /// Weist jedem Teilprozess seine Nachfolger zu.
+        /// Weist jedem Vorgang, entsprechend dem Projektplan, seine Vorgänger zu.
         /// </summary>
-        /// <param name="tasks">Liste der erstellten Teilprozesse.</param>
-        private static void SetAncestors(List<Task> tasks)
-        {
-            foreach (Task task in tasks)
-            {
-                task.Ancestors.AddRange(
-                    tasks.Where(t => t.Predecessors.Contains(task)));
-            }
-        }
-
-        /// <summary>
-        /// Weist jedem Teilprozess, entsprechend dem Projektplan, seinen Vorgänger zu.
-        /// </summary>
-        /// <param name="tasks">Die Liste der erstellten Teilprozesse.</param>
         /// <param name="processPlan">Der Projektplans bzw, der Inhalt der CSV-Datei</param>
-        private static void SetPredecessors(List<Task> tasks, string[] processPlan)
+        private void SetPredecessors(string[] processPlan)
         {
             foreach (string line in processPlan)
             {
                 string[] properties = line.Split(';');
 
                 string id = properties[0];
-                Task task = tasks.Where(t => t.ID == id).First();
+                Task task = Tasks.Where(t => t.ID == id).First();
 
                 string[] predecessorIds = properties[3].Split(',');
 
                 foreach (string preId in predecessorIds)
                 {
-                    task.Predecessors.AddRange(tasks.Where(t => t.ID == preId));
+                    task.Predecessors.AddRange(Tasks.Where(t => t.ID == preId));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Weist jedem Vorgang seine Nachfolger zu.
+        /// </summary>
+        private void SetAncestors()
+        {
+            foreach (Task task in Tasks)
+            {
+                task.Ancestors.AddRange(
+                    Tasks.Where(t => t.Predecessors.Contains(task)));
             }
         }
     }

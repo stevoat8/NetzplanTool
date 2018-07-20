@@ -89,7 +89,7 @@ namespace PrecedenceDiagram
         internal bool IsFinalTask { get { return Ancestors.Count == 0; } }
 
         /// <summary>
-        /// Erzeugt einen Teilprozess ohne Verbindungen zu Nachfolgern oder Vorgängern und ohne
+        /// Erzeugt einen Prozessvorgang ohne Verbindungen zu Nachfolgern oder Vorgängern und ohne
         /// berechnete Fristen.
         /// </summary>
         /// <param name="id"></param>
@@ -138,10 +138,9 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Erzeugt einen Text im DOT-Format, der den Teilprozess darstellt - ohne Verbindungen zu
-        /// anderen Teilprozessen.
+        /// Erzeugt einen Text im DOT-Format, der den Vorgang als Grahpknoten beschreibt.
         /// </summary>
-        /// <returns>Dot des Teilprozesses.</returns>
+        /// <returns>Beschreibung als Graphknoten im DOT-Format.</returns>
         internal string GetNodeDot()
         {
             return
@@ -154,10 +153,10 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Erzeugt einen Text im DOT-Format, der alle Verbindungen zu seinen Vorgängern darstellt. 
-        /// Ist der Teilprozess Teil des kritischen Pfades, wird die Verbindung gekennzeichnet.
+        /// Erzeugt einen Text im DOT-Format, der die Verbindungen des Vorgangs zu seinen
+        /// Vorgängern als Graphkante beschreibt.
         /// </summary>
-        /// <returns>Dot des Verbindungen.</returns>
+        /// <returns>Beschreibung der Graphkanten im DOT-Format.</returns>
         internal string GetEdgeDot()
         {
             StringBuilder dotBuilder = new StringBuilder();
@@ -174,9 +173,9 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Erzeugt eine textuelle Repräsentation eines Teilprozesses. Angelehnt an die Syntax des Prozessplans.
+        /// Erzeugt eine textuelle Repräsentation des Vorgangs. Angelehnt an die Syntax des Prozessplans.
         /// </summary>
-        /// <returns>Textuelle Repräsentation eines Teilprozesses</returns>
+        /// <returns>Textuelle Repräsentation des Vorgangs.</returns>
         internal string GetInfo()
         {
             string predecessors = String.Join(",", Predecessors.Select(n => n.ID));
