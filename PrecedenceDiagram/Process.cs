@@ -47,7 +47,7 @@ namespace PrecedenceDiagram
 
                 Tasks = CreateTasks(processPlan);
                 SetPredecessors(processPlan);
-                SetAncestors();
+                SetSuccessors();
 
                 //Schedule forward
                 foreach (Task task in Tasks)
@@ -77,8 +77,8 @@ namespace PrecedenceDiagram
         public string GetDot()
         {
             StringBuilder dotBuilder = new StringBuilder();
-            dotBuilder.AppendLine($"digraph {Title} {{");
-            dotBuilder.AppendLine("node [shape=record];");
+            dotBuilder.AppendLine($"digraph \"{Title}\" {{");
+            dotBuilder.AppendLine("node[shape=record];");
             dotBuilder.AppendLine("rankdir=LR;");
 
             foreach (Task task in Tasks)
@@ -141,11 +141,11 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Weist jedem Vorgang seine Nachfolger zu.
         /// </summary>
-        private void SetAncestors()
+        private void SetSuccessors()
         {
             foreach (Task task in Tasks)
             {
-                task.Ancestors.AddRange(
+                task.Successors.AddRange(
                     Tasks.Where(t => t.Predecessors.Contains(task)));
             }
         }

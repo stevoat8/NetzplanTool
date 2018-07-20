@@ -21,7 +21,7 @@ namespace NetzplanTool
                 .As('i', "input")
                 .Required();
 
-            parser.Setup(arg => arg.OutputPath)
+            parser.Setup(arg => arg.OutputDir)
                 .As('o', "output")
                 .Required();
 
@@ -54,24 +54,36 @@ namespace NetzplanTool
         {
             try
             {
-                string[] processPlan = ReadProcessPlan(args.CsvPath);
+                Directory.CreateDirectory(args.OutputDir);
                 string processTitle = Path.GetFileNameWithoutExtension(args.CsvPath);
-
+                string[] processPlan = ReadProcessPlan(args.CsvPath);
+                CheckSyntax(processPlan);
                 byte[] digramGraphic = GenerateDiagram(processTitle, processPlan, args.OutputFileFormat);
 
                 string outputFileName = processTitle + "." + args.OutputFileFormat.ToString().ToLowerInvariant();
-                string fullOutputFileName = Path.Combine(args.OutputPath, outputFileName);
-                File.WriteAllBytes(fullOutputFileName, digramGraphic);
+                string absouluteOutputPath = Path.Combine(args.OutputDir, outputFileName);
+                File.WriteAllBytes(absouluteOutputPath, digramGraphic);
 
-                ShowSuccess($"Netzplan generiert unter \"{fullOutputFileName}\"");
+                ShowSuccess($"Netzplan generiert unter \"{absouluteOutputPath}\"");
 
 #if (DEBUG)
-                System.Diagnostics.Process.Start(fullOutputFileName);
+                System.Diagnostics.Process.Start(absouluteOutputPath);
 #endif
             }
             catch (Exception ex)
             {
                 ShowError(ex.Message);
+            }
+        }
+
+        private static void CheckSyntax(string[] processPlan)
+        {
+            foreach (string task in processPlan)
+            {
+                if (task.Contains('{') || task.Contains('}') || task.Contains('|') || task.Contains('"'))
+                {
+                    throw new FormatException("Der Prozessplan enthält eines der unerlaubten Zeichen '{', '}', '\"', oder '|'");
+                }
             }
         }
 
@@ -122,7 +134,8 @@ namespace NetzplanTool
             }
             else
             {
-                throw new FormatException("Die CSV-Datei hat keine Kopfzeile.");
+                //throw new FormatException("Die CSV-Datei hat keine Kopfzeile.");
+                return fileLines.ToArray();
             }
         }
 
@@ -181,7 +194,7 @@ namespace NetzplanTool
             /// <summary>
             /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
             /// </summary>
-            internal string OutputPath { get; set; }
+            internal string OutputDir { get; set; }
         }
     }
 }

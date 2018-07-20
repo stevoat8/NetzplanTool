@@ -35,7 +35,7 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Die Teilprozesse die direkt auf diesen Teilprozess folgen.
         /// </summary>
-        internal List<Task> Ancestors { get; }
+        internal List<Task> Successors { get; }
 
         #region Fristen
 
@@ -86,7 +86,7 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Gibt an, ob der Knoten der Endknoten eines Prozesses ist.
         /// </summary>
-        internal bool IsFinalTask { get { return Ancestors.Count == 0; } }
+        internal bool IsFinalTask { get { return Successors.Count == 0; } }
 
         /// <summary>
         /// Erzeugt einen Prozessvorgang ohne Verbindungen zu Nachfolgern oder Vorgängern und ohne
@@ -101,7 +101,7 @@ namespace PrecedenceDiagram
             Description = description;
             Duration = duration;
             Predecessors = new List<Task>();
-            Ancestors = new List<Task>();
+            Successors = new List<Task>();
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace PrecedenceDiagram
         /// </summary>
         internal void SetStartingPoints()
         {
-            EarliestStart = (IsInitialTask)
+            EarliestStart = IsInitialTask
                 ? 0
                 : Predecessors.Select(pre => pre.EarliestStart + pre.Duration).Max();
             EarliestFinish = EarliestStart + Duration;
@@ -120,9 +120,9 @@ namespace PrecedenceDiagram
         /// </summary>
         internal void SetFinishingPoints()
         {
-            LatestFinish = (IsFinalTask)
-                            ? EarliestFinish
-                            : Ancestors.Select(anc => anc.LatestStart).Min();
+            LatestFinish = IsFinalTask 
+                ? EarliestFinish 
+                : Successors.Select(successor => successor.LatestStart).Min();
             LatestStart = LatestFinish - Duration;
         }
 
@@ -132,9 +132,9 @@ namespace PrecedenceDiagram
         internal void SetFloat()
         {
             TotalFloat = LatestFinish - EarliestFinish;
-            FreeFloat = (IsFinalTask)
+            FreeFloat = IsFinalTask
                 ? 0
-                : Ancestors.Select(anc => anc.EarliestStart).Min() - EarliestFinish;
+                : Successors.Select(successor => successor.EarliestStart).Min() - EarliestFinish;
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace PrecedenceDiagram
         internal string GetNodeDot()
         {
             return
-                $"proc{ID} [label=\"" +
+                $"\"proc{ID}\" [label=\"" +
                 $"{{FAZ={EarliestStart}|FEZ={EarliestFinish}}}|" +
                 $"{{{ID}|{Description}}}|" +
                 $"{{{Duration}|GP={TotalFloat}|FP={FreeFloat}}}|" +
@@ -160,10 +160,10 @@ namespace PrecedenceDiagram
         internal string GetEdgeDot()
         {
             StringBuilder dotBuilder = new StringBuilder();
-            foreach (Task ancestor in Ancestors)
+            foreach (Task successor in Successors)
             {
-                string edgeDot = $"proc{ID} -> proc{ancestor.ID}";
-                if (IsCritical && ancestor.IsCritical)
+                string edgeDot = $"proc{ID} -> proc{successor.ID}";
+                if (IsCritical && successor.IsCritical)
                 {
                     edgeDot += " [color=\"red\"]";
                 }
@@ -179,7 +179,7 @@ namespace PrecedenceDiagram
         internal string GetInfo()
         {
             string predecessors = String.Join(",", Predecessors.Select(n => n.ID));
-            string ancestors = String.Join(",", Ancestors.Select(n => n.ID));
+            string ancestors = String.Join(",", Successors.Select(n => n.ID));
             predecessors = String.IsNullOrWhiteSpace(predecessors) ? "-" : predecessors;
             ancestors = String.IsNullOrWhiteSpace(ancestors) ? "-" : ancestors;
 
