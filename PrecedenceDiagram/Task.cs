@@ -129,7 +129,7 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Berechnet den freien und gesamten Puffer (Teil der Rückwärtsterminierung).
         /// </summary>
-        internal void SetBuffers()
+        internal void SetFloat()
         {
             TotalFloat = LatestFinish - EarliestFinish;
             FreeFloat = (IsFinalTask)
