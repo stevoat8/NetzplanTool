@@ -46,23 +46,6 @@ namespace PrecedenceDiagram
                 Title = title;
 
                 Tasks = CreateTasks(processPlan);
-                SetPredecessors(processPlan);
-                SetSuccessors();
-
-                //Schedule forward
-                foreach (Task task in Tasks)
-                {
-                    task.SetStartingPoints();
-                }
-
-                //Schedule backward
-                Tasks.Reverse();
-                foreach (Task task in Tasks)
-                {
-                    task.SetFinishingPoints();
-                    task.SetFloat();
-                }
-                Tasks.Reverse();
             }
             catch (Exception ex)
             {
@@ -99,41 +82,62 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Erzeugt gemäß des Prozessplans die einzelnen Vorgänge des Prozesses.
-        /// Die Vorgänge sind noch nicht verbunden und die Fristen nicht berechnet.
+        /// Erzeugt gemäß des Prozessplans die einzelnen Vorgänge des Prozesses inkl. der
+        /// Verbindungen der Vorgänge untereinander und der berechneten Fristen.
         /// </summary>
         /// <param name="processPlan">Prozessplan, der die einzelnen Vörgänge beschreibt.</param>
         /// <returns>Die Vörgänge des Prozesses.</returns>
         private static List<Task> CreateTasks(string[] processPlan)
         {
-            List<Task> taskList = new List<Task>();
+            List<Task> tasks = new List<Task>();
 
             foreach (string task in processPlan)
             {
                 string[] properties = task.Split(';');
-                taskList.Add(new Task(properties[0], properties[1], Int32.Parse(properties[2])));
+                tasks.Add(new Task(properties[0], properties[1], Int32.Parse(properties[2])));
             }
-            return taskList;
+
+            SetPredecessors(tasks, processPlan);
+            SetSuccessors(tasks);
+            
+            //Schedule forward
+            foreach (Task task in tasks)
+            {
+                task.SetStartingPoints();
+            }
+
+            //Schedule backward
+            tasks.Reverse();
+            foreach (Task task in tasks)
+            {
+                task.SetFinishingPoints();
+                task.SetFloat();
+            }
+            tasks.Reverse();
+
+
+            return tasks;
         }
 
         /// <summary>
         /// Weist jedem Vorgang, entsprechend dem Projektplan, seine Vorgänger zu.
         /// </summary>
+        /// <param name="tasks">Die Vorgänge deren Vorgänger ermittelt und gesetzt werden.</param>
         /// <param name="processPlan">Der Projektplans bzw, der Inhalt der CSV-Datei</param>
-        private void SetPredecessors(string[] processPlan)
+        private static void SetPredecessors(List<Task> tasks, string[] processPlan)
         {
             foreach (string line in processPlan)
             {
                 string[] properties = line.Split(';');
 
                 string id = properties[0];
-                Task task = Tasks.Where(t => t.ID == id).First();
+                Task task = tasks.Where(t => t.ID == id).First();
 
                 string[] predecessorIds = properties[3].Split(',');
 
                 foreach (string preId in predecessorIds)
                 {
-                    task.Predecessors.AddRange(Tasks.Where(t => t.ID == preId));
+                    task.Predecessors.AddRange(tasks.Where(t => t.ID == preId));
                 }
             }
         }
@@ -141,12 +145,13 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Weist jedem Vorgang seine Nachfolger zu.
         /// </summary>
-        private void SetSuccessors()
+        /// <param name="tasks">Die Vorgänge deren Nachfolger ermittelt und gesetzt werden.</param>
+        private static void SetSuccessors(List<Task> tasks)
         {
-            foreach (Task task in Tasks)
+            foreach (Task task in tasks)
             {
                 task.Successors.AddRange(
-                    Tasks.Where(t => t.Predecessors.Contains(task)));
+                    tasks.Where(t => t.Predecessors.Contains(task)));
             }
         }
     }

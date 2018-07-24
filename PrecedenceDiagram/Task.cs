@@ -105,7 +105,7 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Berechnet den frühesten Anfangs- und Endzeitpunkt (Vorwärtsterminierung).
+        /// Berechnet den frühesten Anfangs- und Endzeitpunkt des Vorgangs. Ist Teil der Vorwärtsterminierung.
         /// </summary>
         internal void SetStartingPoints()
         {
@@ -116,7 +116,7 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Berechnet den spätesten Anfangs- und Endzeitpunkt (Teil der Rückwärtsterminierung).
+        /// Berechnet den spätesten Anfangs- und Endzeitpunkt des Vorgangs. Ist Teil der Rückwärtsterminierung.
         /// </summary>
         internal void SetFinishingPoints()
         {
@@ -127,7 +127,7 @@ namespace PrecedenceDiagram
         }
 
         /// <summary>
-        /// Berechnet den freien und gesamten Puffer (Teil der Rückwärtsterminierung).
+        /// Berechnet den freien und gesamten Puffer des Vorgangs. Ist Teil der Rückwärtsterminierung.
         /// </summary>
         internal void SetFloat()
         {

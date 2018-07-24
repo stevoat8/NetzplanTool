@@ -188,14 +188,14 @@ namespace NetzplanTool
             internal string ProcessPlanPath { get; set; }
 
             /// <summary>
-            /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
-            /// </summary>
-            internal Enums.GraphReturnType OutputFileFormat { get; set; }
-
-            /// <summary>
             /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
             /// </summary>
             internal string OutputDirectory { get; set; }
+
+            /// <summary>
+            /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
+            /// </summary>
+            internal Enums.GraphReturnType OutputFileFormat { get; set; }
         }
     }
 }
