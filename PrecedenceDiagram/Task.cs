@@ -42,22 +42,22 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Frühester Anfangzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int EarliestStart { get; set; }
+        internal int EarliestStartingPoint { get; set; }
 
         /// <summary>
         /// Frühester Endzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int EarliestFinish { get; set; }
+        internal int EarliestFinishingPoint { get; set; }
 
         /// <summary>
         /// Spätester Anfangzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int LatestStart { get; set; }
+        internal int LatestStartingPoint { get; set; }
 
         /// <summary>
         /// Spätester Endzeitpunkt des Teilprozesses.
         /// </summary>
-        internal int LatestFinish { get; set; }
+        internal int LatestFinishingPoint { get; set; }
 
         /// <summary>
         /// Gesamtpuffer des Teilprozesses. Mögliche Verzögerung, ohne dass sich der gesamte Prozess verzögert.
@@ -81,12 +81,12 @@ namespace PrecedenceDiagram
         /// <summary>
         /// Gibt an, ob der Knoten der Startknoten eines Prozesses ist.
         /// </summary>
-        internal bool IsInitialTask { get { return Predecessors.Count == 0; } }
+        internal bool IsInitial { get { return Predecessors.Count == 0; } }
 
         /// <summary>
         /// Gibt an, ob der Knoten der Endknoten eines Prozesses ist.
         /// </summary>
-        internal bool IsFinalTask { get { return Successors.Count == 0; } }
+        internal bool IsFinal { get { return Successors.Count == 0; } }
 
         /// <summary>
         /// Erzeugt einen Prozessvorgang ohne Verbindungen zu Nachfolgern oder Vorgängern und ohne
@@ -109,10 +109,10 @@ namespace PrecedenceDiagram
         /// </summary>
         internal void SetStartingPoints()
         {
-            EarliestStart = IsInitialTask
+            EarliestStartingPoint = IsInitial
                 ? 0
-                : Predecessors.Select(pre => pre.EarliestStart + pre.Duration).Max();
-            EarliestFinish = EarliestStart + Duration;
+                : Predecessors.Select(pre => pre.EarliestStartingPoint + pre.Duration).Max();
+            EarliestFinishingPoint = EarliestStartingPoint + Duration;
         }
 
         /// <summary>
@@ -120,10 +120,10 @@ namespace PrecedenceDiagram
         /// </summary>
         internal void SetFinishingPoints()
         {
-            LatestFinish = IsFinalTask 
-                ? EarliestFinish 
-                : Successors.Select(successor => successor.LatestStart).Min();
-            LatestStart = LatestFinish - Duration;
+            LatestFinishingPoint = IsFinal 
+                ? EarliestFinishingPoint 
+                : Successors.Select(successor => successor.LatestStartingPoint).Min();
+            LatestStartingPoint = LatestFinishingPoint - Duration;
         }
 
         /// <summary>
@@ -131,10 +131,10 @@ namespace PrecedenceDiagram
         /// </summary>
         internal void SetFloat()
         {
-            TotalFloat = LatestFinish - EarliestFinish;
-            FreeFloat = IsFinalTask
+            TotalFloat = LatestFinishingPoint - EarliestFinishingPoint;
+            FreeFloat = IsFinal
                 ? 0
-                : Successors.Select(successor => successor.EarliestStart).Min() - EarliestFinish;
+                : Successors.Select(successor => successor.EarliestStartingPoint).Min() - EarliestFinishingPoint;
         }
 
         /// <summary>
@@ -145,10 +145,10 @@ namespace PrecedenceDiagram
         {
             return
                 $"\"proc{ID}\" [label=\"" +
-                $"{{FAZ={EarliestStart}|FEZ={EarliestFinish}}}|" +
+                $"{{FAZ={EarliestStartingPoint}|FEZ={EarliestFinishingPoint}}}|" +
                 $"{{{ID}|{Description}}}|" +
                 $"{{{Duration}|GP={TotalFloat}|FP={FreeFloat}}}|" +
-                $"{{SAZ={LatestStart}|SEZ={LatestFinish}}}" +
+                $"{{SAZ={LatestStartingPoint}|SEZ={LatestFinishingPoint}}}" +
                 $"\"];";
         }
 

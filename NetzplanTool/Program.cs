@@ -17,11 +17,11 @@ namespace NetzplanTool
         {
             var parser = new FluentCommandLineParser<NetzplanToolArguments>();
 
-            parser.Setup(arg => arg.CsvPath)
+            parser.Setup(arg => arg.ProcessPlanPath)
                 .As('i', "input")
                 .Required();
 
-            parser.Setup(arg => arg.OutputDir)
+            parser.Setup(arg => arg.OutputDirectory)
                 .As('o', "output")
                 .Required();
 
@@ -54,20 +54,21 @@ namespace NetzplanTool
         {
             try
             {
-                Directory.CreateDirectory(args.OutputDir);
-                string processTitle = Path.GetFileNameWithoutExtension(args.CsvPath);
-                string[] processPlan = ReadProcessPlan(args.CsvPath);
+                string processTitle = Path.GetFileNameWithoutExtension(args.ProcessPlanPath);
+                string[] processPlan = ReadProcessPlan(args.ProcessPlanPath);
                 CheckSyntax(processPlan);
+
                 byte[] digramGraphic = GenerateDiagram(processTitle, processPlan, args.OutputFileFormat);
 
                 string outputFileName = processTitle + "." + args.OutputFileFormat.ToString().ToLowerInvariant();
-                string absouluteOutputPath = Path.Combine(args.OutputDir, outputFileName);
-                File.WriteAllBytes(absouluteOutputPath, digramGraphic);
+                string absoluteOutputPath = Path.Combine(args.OutputDirectory, outputFileName);
+                Directory.CreateDirectory(args.OutputDirectory);
+                File.WriteAllBytes(absoluteOutputPath, digramGraphic);
 
-                ShowSuccess($"Netzplan generiert unter \"{absouluteOutputPath}\"");
+                ShowSuccess($"Netzplan generiert unter \"{absoluteOutputPath}\"");
 
 #if (DEBUG)
-                System.Diagnostics.Process.Start(absouluteOutputPath);
+                System.Diagnostics.Process.Start(absoluteOutputPath);
 #endif
             }
             catch (Exception ex)
@@ -182,9 +183,9 @@ namespace NetzplanTool
         internal class NetzplanToolArguments
         {
             /// <summary>
-            /// Speicherpfad des Projektplans (Pfad + Dateiname).
+            /// Speicherpfad des Prozessplans (Pfad + Dateiname).
             /// </summary>
-            internal string CsvPath { get; set; }
+            internal string ProcessPlanPath { get; set; }
 
             /// <summary>
             /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
@@ -194,7 +195,7 @@ namespace NetzplanTool
             /// <summary>
             /// Speicherpfad unter dem der erstellte Graph gespeichert wird.
             /// </summary>
-            internal string OutputDir { get; set; }
+            internal string OutputDirectory { get; set; }
         }
     }
 }
