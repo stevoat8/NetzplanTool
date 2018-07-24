@@ -58,12 +58,13 @@ namespace NetzplanTool
                 string[] processPlan = ReadProcessPlan(args.ProcessPlanPath);
                 CheckSyntax(processPlan);
 
-                byte[] digramGraphic = GenerateDiagram(processTitle, processPlan, args.OutputFileFormat);
+                Process process = new Process(processTitle, processPlan);
+                byte[] precedenceDiagram = GeneratePrecedenceDiagram(process, args.OutputFileFormat);
 
                 string outputFileName = processTitle + "." + args.OutputFileFormat.ToString().ToLowerInvariant();
                 string absoluteOutputPath = Path.Combine(args.OutputDirectory, outputFileName);
                 Directory.CreateDirectory(args.OutputDirectory);
-                File.WriteAllBytes(absoluteOutputPath, digramGraphic);
+                File.WriteAllBytes(absoluteOutputPath, precedenceDiagram);
 
                 ShowSuccess($"Netzplan generiert unter \"{absoluteOutputPath}\"");
 
@@ -79,9 +80,10 @@ namespace NetzplanTool
 
         private static void CheckSyntax(string[] processPlan)
         {
+            char[] invalidChars = new char[] { '{', '}', '|', '"' };
             foreach (string task in processPlan)
             {
-                if (task.Contains('{') || task.Contains('}') || task.Contains('|') || task.Contains('"'))
+                if (task.IndexOfAny(invalidChars) != 1)
                 {
                     throw new FormatException("Der Prozessplan enthält eines der unerlaubten Zeichen '{', '}', '\"', oder '|'");
                 }
@@ -89,15 +91,13 @@ namespace NetzplanTool
         }
 
         /// <summary>
-        /// Erzeugt aus einem Projektplan ein Diagramm im übergebenen Dateiformat, das den Prozess
+        /// Erzeugt aus einem Prozess einen Netzplan im übergebenen Dateiformat, das den Prozess
         /// mit allen Vorgängen und Fristen darstellt.
         /// </summary>
-        /// <param name="processTitle">Titel des Prozesses</param>
-        /// <param name="processPlan">Der Prozessplan, nach dem das Diagramm erzeugt wird.</param>
+        /// <param name="process">Der Prozess, zu dem der Netzplan erzeugt wird.</param>
         /// <param name="fileFormat">Dateiformat in dem die Diagramm-Grafik erzeugt wird.</param>
-        /// <returns>Digramm-Grafik des Prozesses.</returns>
-        private static byte[] GenerateDiagram(
-            string processTitle, string[] processPlan, Enums.GraphReturnType fileFormat)
+        /// <returns>Netzplan-Grafik des Prozesses.</returns>
+        private static byte[] GeneratePrecedenceDiagram(Process process, Enums.GraphReturnType fileFormat)
         {
             #region Arrange graphViz wrapper
 
@@ -113,11 +113,8 @@ namespace NetzplanTool
 
             #endregion Arrange graphViz wrapper
 
-            Process process = new Process(processTitle, processPlan);
-
             string digramDot = process.GetDot();
-            byte[] digramGraphic = wrapper.GenerateGraph(digramDot, fileFormat);
-            return digramGraphic;
+            return wrapper.GenerateGraph(digramDot, fileFormat);
         }
 
         /// <summary>
