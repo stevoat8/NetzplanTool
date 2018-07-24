@@ -1,8 +1,8 @@
 ﻿===   Help menu   ===
 
 Das Netzplan Tool generiert aus der tabellarische Beschreibung eines Projektplans automatisch einen Netzplan und exportiert diesen als Grafikdatei.
-Das Programm benötigt zwingend den Dateipfad des Projektplans und das Verzeichnis in welches der Graph gespeichert werden soll.
-Außerdem kann das Ausgabeformat der Grafikdatei angegeben werden. Mögliche Formate sind: png , jpg, pdf, svg, plain, plainext. Wird kein Format angegeben, wird die Datei als PNG ausgegeben.
+Das Programm benötigt zwingend den Dateipfad des Projektplans und das Verzeichnis, in welches der Graph gespeichert werden soll.
+Außerdem kann das Ausgabeformat der Grafikdatei angegeben werden. Mögliche Formate sind: png, jpg, pdf, svg, plain, plaintext. Wird kein Format angegeben, wird die Datei als PNG ausgegeben.
 
 Format des Projektplans:
 Der Projektplan muss im CSV-Format vorliegen und dem folgende Muster entsprechen:
@@ -20,8 +20,8 @@ Die einzelnen Spalten der Zeilen sind durch Semikola voneinander zu trennen.
 Die Zeile mit den Daten eines Projektabschnitts muss stets vor den Zeilen mit den Daten der nachfolgenden Schritte in der Datei auftreten.
 
 Parameter:
-	-i --input		Dateipfad des Projeketplans 
+	-i --input		Dateipfad des Projektplans
 	-o --output		Verzeichnis in welches der Graph gespeichert wird
-	-f --format		Dateiformat der Graph-Datei (optional - standardwert: png)
-					Mögliche Werte: png , jpg, pdf, svg, plain, plainext
+	-f --format		Dateiformat der Graph-Datei (optional - Standardwert: png)
+					Mögliche Werte: png, jpg, pdf, svg, plain, plaintext
 	-h --help		Öffnet das Hilfe Menü
