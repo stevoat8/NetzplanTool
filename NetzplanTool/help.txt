@@ -2,7 +2,7 @@
 
 Das Netzplan Tool generiert aus der tabellarische Beschreibung eines Projektplans automatisch einen Netzplan und exportiert diesen als Grafikdatei.
 Das Programm benötigt zwingend den Dateipfad des Projektplans und das Verzeichnis, in welches der Graph gespeichert werden soll.
-Außerdem kann das Ausgabeformat der Grafikdatei angegeben werden. Mögliche Formate sind: png, jpg, pdf, svg, plain, plaintext. Wird kein Format angegeben, wird die Datei als PNG ausgegeben.
+Außerdem kann das Ausgabeformat der Grafikdatei angegeben werden. Mögliche Formate sind: png, jpg, pdf, svg, plain, plainext. Wird kein Format angegeben, wird die Datei als PNG ausgegeben.
 
 Format des Projektplans:
 Der Projektplan muss im CSV-Format vorliegen und dem folgende Muster entsprechen:
