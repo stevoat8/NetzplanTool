@@ -23,5 +23,5 @@ Parameter:
 	-i --input		Dateipfad des Projektplans
 	-o --output		Verzeichnis in welches der Graph gespeichert wird
 	-f --format		Dateiformat der Graph-Datei (optional - Standardwert: png)
-					Mögliche Werte: png, jpg, pdf, svg, plain, plaintext
-	-h --help		Zeigt diesen Hilfetext an
+					Mögliche Werte: png, jpg, pdf, svg, plain, plainext
+	-h --help		Zeigt einen Hilfetext an
