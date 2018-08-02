@@ -83,7 +83,7 @@ namespace NetzplanTool
             char[] invalidChars = new char[] { '{', '}', '|', '"' };
             foreach (string task in processPlan)
             {
-                if (task.IndexOfAny(invalidChars) != 1)
+                if (task.IndexOfAny(invalidChars) != -1)
                 {
                     throw new FormatException("Der Prozessplan enthält eines der unerlaubten Zeichen '{', '}', '\"', oder '|'");
                 }
@@ -124,16 +124,17 @@ namespace NetzplanTool
         /// <returns>Die einzelnen Prozessvorgänge.</returns>
         private static string[] ReadProcessPlan(string fileName)
         {
-            string[] fileLines = File.ReadAllLines(fileName, Encoding.UTF7);
-            string firstLine = fileLines[0];
+            string[] lines = File.ReadAllLines(fileName, Encoding.UTF7);
+            lines = lines.Where(line => string.IsNullOrWhiteSpace(line) == false).ToArray();
+            string firstLine = lines[0];
             if (Regex.IsMatch(firstLine, @"\w+;\w+;\w+;\w+"))
             {
-                return fileLines.Skip(1).ToArray();
+                return lines.Skip(1).ToArray();
             }
             else
             {
                 //throw new FormatException("Die CSV-Datei hat keine Kopfzeile.");
-                return fileLines.ToArray();
+                return lines.ToArray();
             }
         }
 
