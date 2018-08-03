@@ -120,8 +120,8 @@ namespace PrecedenceDiagram
         /// </summary>
         internal void SetFinishingPoints()
         {
-            LatestFinishingPoint = IsFinal 
-                ? EarliestFinishingPoint 
+            LatestFinishingPoint = IsFinal
+                ? EarliestFinishingPoint
                 : Successors.Select(successor => successor.LatestStartingPoint).Min();
             LatestStartingPoint = LatestFinishingPoint - Duration;
         }
@@ -143,13 +143,18 @@ namespace PrecedenceDiagram
         /// <returns>Beschreibung als Graphknoten im DOT-Format.</returns>
         internal string GetNodeDot()
         {
-            return
+            string nodeDot =
                 $"\"proc{ID}\" [label=\"" +
                 $"{{FAZ={EarliestStartingPoint}|FEZ={EarliestFinishingPoint}}}|" +
                 $"{{{ID}|{Description}}}|" +
                 $"{{{Duration}|GP={TotalFloat}|FP={FreeFloat}}}|" +
                 $"{{SAZ={LatestStartingPoint}|SEZ={LatestFinishingPoint}}}" +
-                $"\"];";
+                $"\"";
+            if (IsCritical)
+            {
+                nodeDot += ", color=\"red\"";
+            }
+            return nodeDot + "];";
         }
 
         /// <summary>

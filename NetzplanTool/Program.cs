@@ -113,8 +113,8 @@ namespace NetzplanTool
 
             #endregion Arrange graphViz wrapper
 
-            string digramDot = process.GetDot();
-            return wrapper.GenerateGraph(digramDot, fileFormat);
+            string diagramDot = process.GetDot();
+            return wrapper.GenerateGraph(diagramDot, fileFormat);
         }
 
         /// <summary>
