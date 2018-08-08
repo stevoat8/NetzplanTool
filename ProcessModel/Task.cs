@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace PrecedenceDiagram
+namespace ProcessModel
 {
     /// <summary>
     /// Stellt einen Teilprozess innerhalb eines Netzplans dar.
@@ -144,7 +144,7 @@ namespace PrecedenceDiagram
         internal string GetNodeDot()
         {
             string nodeDot =
-                $"\"proc{ID}\" [label=\"" +
+                $"\"task{ID}\" [label=\"" +
                 $"{{FAZ={EarliestStartingPoint}|FEZ={EarliestFinishingPoint}}}|" +
                 $"{{{ID}|{Description}}}|" +
                 $"{{{Duration}|GP={TotalFloat}|FP={FreeFloat}}}|" +
@@ -167,7 +167,7 @@ namespace PrecedenceDiagram
             StringBuilder dotBuilder = new StringBuilder();
             foreach (Task successor in Successors)
             {
-                string edgeDot = $"proc{ID} -> proc{successor.ID}";
+                string edgeDot = $"task{ID} -> task{successor.ID}";
                 if (IsCritical && successor.IsCritical)
                 {
                     edgeDot += " [color=\"red\"]";

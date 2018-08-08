@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace PrecedenceDiagram
+namespace ProcessModel
 {
     /// <summary>
     /// Stellt einen Prozess dar, der aus einzelnen Vorgängen besteht und von einem Netzplan repräsentiert wird.

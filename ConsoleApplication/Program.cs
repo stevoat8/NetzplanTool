@@ -1,19 +1,18 @@
-﻿using Fclp;
-using GraphVizWrapper;
-using GraphVizWrapper.Commands;
-using GraphVizWrapper.Queries;
-using PrecedenceDiagram;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Fclp;
+using PrecedenceDiagram;
 
-namespace NetzplanTool
+namespace ConsoleApplication
 {
-    public class Program
+    class Program
     {
-        private static void Main(string[] args)
+        static void Main(string[] args)
         {
             var parser = new FluentCommandLineParser<NetzplanToolArguments>();
 
@@ -27,7 +26,7 @@ namespace NetzplanTool
 
             parser.Setup(arg => arg.OutputFileFormat)
                 .As('f', "format")
-                .SetDefault(Enums.GraphReturnType.Png);
+                .SetDefault(GraphicFormat.Png);
 
             parser.SetupHelp("h", "help")
                  .Callback(text => ShowHelp());
@@ -42,24 +41,23 @@ namespace NetzplanTool
 
             if (parseResult.HelpCalled == false)
             {
-                StartNetzplanTool(parser.Object);
+                CreatePrecedenceDiagram(parser.Object);
             }
         }
 
         /// <summary>
-        /// Startet das Netzplan Tool Programm, das eine Prozess-Grafik erstellt.
+        /// Erzeugt und speichert den Netzplan aus der übergebenen Prozessplan-Datei.
         /// </summary>
-        /// <param name="args">Die nötigen Parameter.</param>
-        private static void StartNetzplanTool(NetzplanToolArguments args)
+        /// <param name="args">Die Startparameter der Netzplan Tool Programms.</param>
+        private static void CreatePrecedenceDiagram(NetzplanToolArguments args)
         {
+            PrecedenceDiagramGenerator generator = new PrecedenceDiagramGenerator();
             try
             {
                 string processTitle = Path.GetFileNameWithoutExtension(args.ProcessPlanPath);
                 string[] processPlan = ReadProcessPlan(args.ProcessPlanPath);
-                CheckSyntax(processPlan);
 
-                Process process = new Process(processTitle, processPlan);
-                byte[] precedenceDiagram = GeneratePrecedenceDiagram(process, args.OutputFileFormat);
+                byte[] precedenceDiagram = generator.GeneratePrecedenceDiagram(processTitle, processPlan, args.OutputFileFormat);
 
                 string outputFileName = processTitle + "." + args.OutputFileFormat.ToString().ToLowerInvariant();
                 string absoluteOutputPath = Path.Combine(args.OutputDirectory, outputFileName);
@@ -78,45 +76,6 @@ namespace NetzplanTool
             }
         }
 
-        private static void CheckSyntax(string[] processPlan)
-        {
-            char[] invalidChars = new char[] { '{', '}', '|', '"' };
-            foreach (string task in processPlan)
-            {
-                if (task.IndexOfAny(invalidChars) != -1)
-                {
-                    throw new FormatException("Der Prozessplan enthält eines der unerlaubten Zeichen '{', '}', '\"', oder '|'");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Erzeugt aus einem Prozess einen Netzplan im übergebenen Dateiformat, das den Prozess
-        /// mit allen Vorgängen und Fristen darstellt.
-        /// </summary>
-        /// <param name="process">Der Prozess, zu dem der Netzplan erzeugt wird.</param>
-        /// <param name="fileFormat">Dateiformat in dem die Diagramm-Grafik erzeugt wird.</param>
-        /// <returns>Netzplan-Grafik des Prozesses.</returns>
-        private static byte[] GeneratePrecedenceDiagram(Process process, Enums.GraphReturnType fileFormat)
-        {
-            #region Arrange graphViz wrapper
-
-            var getStartProcessQuery = new GetStartProcessQuery();
-            var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
-            var registerLayoutPluginCommand = new RegisterLayoutPluginCommand(
-                getProcessStartInfoQuery, getStartProcessQuery);
-
-            GraphGeneration wrapper = new GraphGeneration(
-                getStartProcessQuery,
-                getProcessStartInfoQuery,
-                registerLayoutPluginCommand);
-
-            #endregion Arrange graphViz wrapper
-
-            string diagramDot = process.GetDot();
-            return wrapper.GenerateGraph(diagramDot, fileFormat);
-        }
-
         /// <summary>
         /// Liest den Prozessplan im CSV-Format unter dem übergebenen Dateipfad ein.
         /// </summary>
@@ -126,16 +85,7 @@ namespace NetzplanTool
         {
             string[] lines = File.ReadAllLines(fileName, Encoding.UTF7);
             lines = lines.Where(line => string.IsNullOrWhiteSpace(line) == false).ToArray();
-            string firstLine = lines[0];
-            if (Regex.IsMatch(firstLine, @"\w+;\w+;\w+;\w+"))
-            {
-                return lines.Skip(1).ToArray();
-            }
-            else
-            {
-                //throw new FormatException("Die CSV-Datei hat keine Kopfzeile.");
-                return lines.ToArray();
-            }
+            return lines;
         }
 
         /// <summary>
@@ -191,9 +141,9 @@ namespace NetzplanTool
             internal string OutputDirectory { get; set; }
 
             /// <summary>
-            /// Dateiformat in welches der Graph gespeichert werden soll (jpg, png, svg, pdf, plain, plainext).
+            /// Dateiformat in welches der Graph gespeichert werden soll (png, jpg, svg, pdf, dot).
             /// </summary>
-            internal Enums.GraphReturnType OutputFileFormat { get; set; }
+            internal GraphicFormat OutputFileFormat { get; set; }
         }
     }
 }
