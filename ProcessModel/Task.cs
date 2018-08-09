@@ -105,32 +105,27 @@ namespace ProcessModel
         }
 
         /// <summary>
-        /// Berechnet den frühesten Anfangs- und Endzeitpunkt des Vorgangs. Ist Teil der Vorwärtsterminierung.
+        /// Vorwärtsterminierung. Berechnet den frühesten Anfangs- und Endzeitpunkt des Vorgangs.
         /// </summary>
-        internal void SetStartingPoints()
+        internal void ForwardPassCalculation()
         {
             EarliestStartingPoint = IsInitial
                 ? 0
-                : Predecessors.Select(pre => pre.EarliestStartingPoint + pre.Duration).Max();
+                : Predecessors.Select(pre => pre.EarliestFinishingPoint).Max();
             EarliestFinishingPoint = EarliestStartingPoint + Duration;
         }
 
         /// <summary>
-        /// Berechnet den spätesten Anfangs- und Endzeitpunkt des Vorgangs. Ist Teil der Rückwärtsterminierung.
+        /// Rückwärtsterminierung. Berechnet den spätesten Anfangs- und Endzeitpunkt, den
+        /// Gesamtpuffer und den Freien Puffer des Vorgangs.
         /// </summary>
-        internal void SetFinishingPoints()
+        internal void BackwardPassCalculation()
         {
             LatestFinishingPoint = IsFinal
                 ? EarliestFinishingPoint
                 : Successors.Select(successor => successor.LatestStartingPoint).Min();
             LatestStartingPoint = LatestFinishingPoint - Duration;
-        }
 
-        /// <summary>
-        /// Berechnet den freien und gesamten Puffer des Vorgangs. Ist Teil der Rückwärtsterminierung.
-        /// </summary>
-        internal void SetFloat()
-        {
             TotalFloat = LatestFinishingPoint - EarliestFinishingPoint;
             FreeFloat = IsFinal
                 ? 0

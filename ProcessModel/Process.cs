@@ -103,15 +103,14 @@ namespace ProcessModel
             //Schedule forward
             foreach (Task task in tasks)
             {
-                task.SetStartingPoints();
+                task.ForwardPassCalculation();
             }
 
             //Schedule backward
             tasks.Reverse();
             foreach (Task task in tasks)
             {
-                task.SetFinishingPoints();
-                task.SetFloat();
+                task.BackwardPassCalculation();
             }
             tasks.Reverse();
 
