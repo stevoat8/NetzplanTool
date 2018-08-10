@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Fclp;
+using PrecedenceDiagram;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Fclp;
-using PrecedenceDiagram;
 
 namespace ConsoleApplication
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var parser = new FluentCommandLineParser<NetzplanToolArguments>();
 
@@ -67,7 +65,7 @@ namespace ConsoleApplication
                 ShowSuccess($"Netzplan als \"{absoluteOutputPath}\" gespeichert.");
 
 #if (DEBUG)
-                System.Diagnostics.Process.Start(absoluteOutputPath);
+                Process.Start(absoluteOutputPath);
 #endif
             }
             catch (Exception ex)
@@ -97,6 +95,7 @@ namespace ConsoleApplication
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Error.WriteLine(message);
             Console.ResetColor();
+            Debug.Print(message);
         }
 
         /// <summary>
@@ -123,6 +122,7 @@ namespace ConsoleApplication
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(message);
             Console.ResetColor();
+            Debug.Print(message);
         }
 
         /// <summary>
