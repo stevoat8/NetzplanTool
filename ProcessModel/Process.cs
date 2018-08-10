@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ProcessModel
 {
@@ -41,16 +42,8 @@ namespace ProcessModel
         /// <param name="processPlan">Beschreibungen der einzelnen Prozessvorgänge./// </param>
         public Process(string title, string[] processPlan)
         {
-            try
-            {
-                Title = title;
-
-                Tasks = CreateTasks(processPlan);
-            }
-            catch (Exception ex)
-            {
-                throw new FormatException("Der Prozessplan hat ein ungültiges Format.", ex);
-            }
+            Title = title;
+            Tasks = CreateTasks(processPlan);
         }
 
         /// <summary>
@@ -90,16 +83,102 @@ namespace ProcessModel
         private static List<Task> CreateTasks(string[] processPlan)
         {
             List<Task> tasks = new List<Task>();
+            int lineCount = 1;
 
-            foreach (string task in processPlan)
+            //Kopfzeile eliminieren. Außer bei der Kopfzeile ist der 3. Wert immer eine Ziffer
+            if (Regex.IsMatch(processPlan[0], @"\w+;\w+;\w+;\w+"))
             {
-                string[] properties = task.Split(';');
-                tasks.Add(new Task(properties[0], properties[1], Int32.Parse(properties[2])));
+                processPlan = processPlan.Skip(1).ToArray();
+                lineCount++;
             }
 
-            SetPredecessors(tasks, processPlan);
+            foreach (string line in processPlan)
+            {
+                string[] properties = line.Split(';');
+                string id = properties[0].Trim();
+                string description = properties[1].Trim().Replace("\t", " ");
+                string[] predecessorIds = Regex.Replace(properties[3], @"\s+", "").Split(',');
+
+                string errorMsgHeader = $"Formatfehler in Zeile {lineCount} (Vorgang \"{id}\"):";
+
+                if (properties.Length != 4)
+                {
+                    throw new FormatException($"{errorMsgHeader} \"{line}\" definiert nicht genau 4 Werte.");
+                }
+
+                if (Regex.IsMatch(id, @"^[A-Za-z0-9]+$") == false)
+                {
+                    throw new FormatException($"{errorMsgHeader} \"{id}\" ist keine zulässige Vorgangs-ID." +
+                        $" Zulässige Zeichen sind: A-Z, a-z und 0-9. Keine Leerzeichen.");
+                }
+
+                int duration = -1;
+                try
+                {
+                    duration = Int32.Parse(properties[2]);
+                }
+                catch (Exception)
+                {
+                    throw new FormatException($"{errorMsgHeader} " +
+                        $"\"{properties[2]}\" stellt keine Vorgangsdauer dar. Nur Ziffern erlaubt.");
+                }
+                if (duration <= 0)
+                {
+                    throw new FormatException($"{errorMsgHeader} Die Dauer des Vorgangs muss größer 0 sein.");
+                }
+
+                Task task = new Task(id, description, duration);
+
+                try
+                {
+                    task.Predecessors.AddRange(
+                        GetPredecessors(tasks, predecessorIds));
+                }
+                catch (FormatException ex)
+                {
+                    throw new FormatException(errorMsgHeader + " " + ex.Message);
+                }
+
+                tasks.Add(task);
+
+                lineCount++;
+            }
+
             SetSuccessors(tasks);
-            
+
+            ScheduleTasks(tasks);
+
+            return tasks;
+        }
+
+        private static List<Task> GetPredecessors(List<Task> tasks, string[] predecessorIds)
+        {
+            List<Task> predecessors = new List<Task>();
+            if (predecessorIds[0] == "-")
+            {
+                if (tasks.Count > 0)
+                {
+                    throw new FormatException($"Es darf nur einen Startknoten geben.");
+                }
+            }
+            else
+            {
+                foreach (string predecessorId in predecessorIds)
+                {
+                    Task tempTask = tasks.Where(t => t.ID == predecessorId).FirstOrDefault();
+                    if (tempTask == null)
+                    {
+                        throw new FormatException($"An dieser Stelle wurde noch kein " +
+                                $"Vorgang mit der ID \"{predecessorId}\" definiert.");
+                    }
+                    predecessors.Add(tempTask);
+                }
+            }
+            return predecessors;
+        }
+
+        private static void ScheduleTasks(List<Task> tasks)
+        {
             //Schedule forward
             foreach (Task task in tasks)
             {
@@ -113,32 +192,6 @@ namespace ProcessModel
                 task.BackwardPassCalculation();
             }
             tasks.Reverse();
-
-
-            return tasks;
-        }
-
-        /// <summary>
-        /// Weist jedem Vorgang, entsprechend dem Projektplan, seine Vorgänger zu.
-        /// </summary>
-        /// <param name="tasks">Die Vorgänge deren Vorgänger ermittelt und gesetzt werden.</param>
-        /// <param name="processPlan">Der Projektplans bzw, der Inhalt der CSV-Datei</param>
-        private static void SetPredecessors(List<Task> tasks, string[] processPlan)
-        {
-            foreach (string line in processPlan)
-            {
-                string[] properties = line.Split(';');
-
-                string id = properties[0];
-                Task task = tasks.Where(t => t.ID == id).First();
-
-                string[] predecessorIds = properties[3].Split(',');
-
-                foreach (string preId in predecessorIds)
-                {
-                    task.Predecessors.AddRange(tasks.Where(t => t.ID == preId));
-                }
-            }
         }
 
         /// <summary>
@@ -151,6 +204,13 @@ namespace ProcessModel
             {
                 task.Successors.AddRange(
                     tasks.Where(t => t.Predecessors.Contains(task)));
+            }
+
+            List<Task> finalTasks = tasks.FindAll(t => t.IsFinal);
+            if (finalTasks.Count > 1)
+            {
+                string ids = String.Join(",", finalTasks.Select(t => t.ID));
+                throw new FormatException($"Formatfehler: Es gibt mehr als einen Endknoten. Folgende Vorgänge haben keine Nachfolger: {ids}.");
             }
         }
     }

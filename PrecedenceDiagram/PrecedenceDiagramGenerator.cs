@@ -2,8 +2,6 @@
 using GraphVizWrapper.Commands;
 using GraphVizWrapper.Queries;
 using ProcessModel;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace PrecedenceDiagram
 {
@@ -42,13 +40,17 @@ namespace PrecedenceDiagram
         /// <returns>Gerenderter Netzplan.</returns>
         public byte[] GeneratePrecedenceDiagram(string processTitle, string[] processPlan, GraphicFormat format)
         {
-            processPlan = CheckForFormalErrors(processPlan);
             Process process = new Process(processTitle, processPlan);
             string diagramDot = process.GetDot();
             Enums.GraphReturnType gVFormat = ConvertToGraphVizEnum(format);
             return wrapper.GenerateGraph(diagramDot, gVFormat);
         }
 
+        /// <summary>
+        /// Konvertiert das <see cref="GraphicFormat"/>-Enum in das GraphViz <see cref="Enums.GraphReturnType"/>-Enum.
+        /// </summary>
+        /// <param name="format"></param>
+        /// <returns></returns>
         private static Enums.GraphReturnType ConvertToGraphVizEnum(GraphicFormat format)
         {
             switch (format)
@@ -71,24 +73,6 @@ namespace PrecedenceDiagram
                 default:
                     return Enums.GraphReturnType.Png;
             }
-        }
-
-        /// <summary>
-        /// Prüft ob der übergebene Prozessablaufplan syntaktisch und semantisch korrkt formuliert
-        /// ist. Außerdem wird die Kopfzeile, soweit vorhanden, entfernt.
-        /// Bei Fehlern werden entsprechende Exceptions ausgelöst.
-        /// </summary>
-        /// <param name="processPlan">Zu prüfendere Prozessablaufplan.</param>
-        /// <returns></returns>
-        private static string[] CheckForFormalErrors(string[] processPlan)
-        {
-            //Kopfzeile eliminieren
-            if (Regex.IsMatch(processPlan[0], @"\w+;\w+;\w+;\w+"))
-            {
-                processPlan = processPlan.Skip(1).ToArray();
-            }
-
-            return processPlan;
         }
     }
 }
