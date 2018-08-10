@@ -64,7 +64,7 @@ namespace ConsoleApplication
                 Directory.CreateDirectory(args.OutputDirectory);
                 File.WriteAllBytes(absoluteOutputPath, precedenceDiagram);
 
-                ShowSuccess($"Netzplan generiert unter \"{absoluteOutputPath}\"");
+                ShowSuccess($"Netzplan als \"{absoluteOutputPath}\" gespeichert.");
 
 #if (DEBUG)
                 System.Diagnostics.Process.Start(absoluteOutputPath);
@@ -121,7 +121,7 @@ namespace ConsoleApplication
         private static void ShowSuccess(string message)
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.Error.WriteLine(message);
+            Console.WriteLine(message);
             Console.ResetColor();
         }
 
