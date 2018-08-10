@@ -162,7 +162,7 @@ namespace ProcessModel
             StringBuilder dotBuilder = new StringBuilder();
             foreach (Task successor in Successors)
             {
-                string edgeDot = $"task{ID} -> task{successor.ID}";
+                string edgeDot = $"\"task{ID}\" -> \"task{successor.ID}\"";
                 if (IsCritical && successor.IsCritical)
                 {
                     edgeDot += " [color=\"red\"]";
